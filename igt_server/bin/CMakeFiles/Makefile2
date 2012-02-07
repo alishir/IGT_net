@@ -24,9 +24,6 @@ SUFFIXES =
 
 .SUFFIXES: .hpux_make_needs_suffix_list
 
-# Produce verbose output by default.
-VERBOSE = 1
-
 # Suppress display of executed commands.
 $(VERBOSE).SILENT:
 
@@ -47,10 +44,10 @@ CMAKE_COMMAND = /usr/bin/cmake
 RM = /usr/bin/cmake -E remove -f
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ali/doc/code/IGT_net/igt_server
+CMAKE_SOURCE_DIR = /tmp/IGT_net/igt_server
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ali/doc/code/IGT_net/igt_server/bin
+CMAKE_BINARY_DIR = /tmp/IGT_net/igt_server/bin
 
 #=============================================================================
 # Target rules for target CMakeFiles/igt_server.dir
@@ -59,7 +56,7 @@ CMAKE_BINARY_DIR = /home/ali/doc/code/IGT_net/igt_server/bin
 CMakeFiles/igt_server.dir/all:
 	$(MAKE) -f CMakeFiles/igt_server.dir/build.make CMakeFiles/igt_server.dir/depend
 	$(MAKE) -f CMakeFiles/igt_server.dir/build.make CMakeFiles/igt_server.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles  1 2 3 4 5 6 7 8 9 10
+	$(CMAKE_COMMAND) -E cmake_progress_report /tmp/IGT_net/igt_server/bin/CMakeFiles  1 2 3 4 5 6 7 8 9 10
 	@echo "Built target igt_server"
 .PHONY : CMakeFiles/igt_server.dir/all
 
@@ -69,9 +66,9 @@ all: CMakeFiles/igt_server.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/igt_server.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles 10
+	$(CMAKE_COMMAND) -E cmake_progress_start /tmp/IGT_net/igt_server/bin/CMakeFiles 10
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/igt_server.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /tmp/IGT_net/igt_server/bin/CMakeFiles 0
 .PHONY : CMakeFiles/igt_server.dir/rule
 
 # Convenience name for target.

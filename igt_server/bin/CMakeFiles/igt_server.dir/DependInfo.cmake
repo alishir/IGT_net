@@ -4,13 +4,13 @@ SET(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 SET(CMAKE_DEPENDS_CHECK_CXX
-  "/home/ali/doc/code/IGT_net/igt_server/framegrabber.cpp" "/home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles/igt_server.dir/framegrabber.cpp.o"
-  "/home/ali/doc/code/IGT_net/igt_server/bin/moc_framegrabber.cxx" "/home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles/igt_server.dir/moc_framegrabber.cxx.o"
-  "/home/ali/doc/code/IGT_net/igt_server/bin/moc_scoresender.cxx" "/home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles/igt_server.dir/moc_scoresender.cxx.o"
-  "/home/ali/doc/code/IGT_net/igt_server/bin/moc_sender.cxx" "/home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles/igt_server.dir/moc_sender.cxx.o"
-  "/home/ali/doc/code/IGT_net/igt_server/scoresender.cpp" "/home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles/igt_server.dir/scoresender.cpp.o"
-  "/home/ali/doc/code/IGT_net/igt_server/sender.cpp" "/home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles/igt_server.dir/sender.cpp.o"
-  "/home/ali/doc/code/IGT_net/igt_server/webcam_stream.cpp" "/home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles/igt_server.dir/webcam_stream.cpp.o"
+  "/tmp/IGT_net/igt_server/framegrabber.cpp" "/tmp/IGT_net/igt_server/bin/CMakeFiles/igt_server.dir/framegrabber.cpp.o"
+  "/tmp/IGT_net/igt_server/bin/moc_framegrabber.cxx" "/tmp/IGT_net/igt_server/bin/CMakeFiles/igt_server.dir/moc_framegrabber.cxx.o"
+  "/tmp/IGT_net/igt_server/bin/moc_scoresender.cxx" "/tmp/IGT_net/igt_server/bin/CMakeFiles/igt_server.dir/moc_scoresender.cxx.o"
+  "/tmp/IGT_net/igt_server/bin/moc_sender.cxx" "/tmp/IGT_net/igt_server/bin/CMakeFiles/igt_server.dir/moc_sender.cxx.o"
+  "/tmp/IGT_net/igt_server/scoresender.cpp" "/tmp/IGT_net/igt_server/bin/CMakeFiles/igt_server.dir/scoresender.cpp.o"
+  "/tmp/IGT_net/igt_server/sender.cpp" "/tmp/IGT_net/igt_server/bin/CMakeFiles/igt_server.dir/sender.cpp.o"
+  "/tmp/IGT_net/igt_server/webcam_stream.cpp" "/tmp/IGT_net/igt_server/bin/CMakeFiles/igt_server.dir/webcam_stream.cpp.o"
   )
 SET(CMAKE_CXX_COMPILER_ID "GNU")
 
@@ -19,7 +19,6 @@ SET(CMAKE_TARGET_DEFINITIONS
   "QT_GUI_LIB"
   "QT_NETWORK_LIB"
   "QT_CORE_LIB"
-  "QT_DEBUG"
   )
 
 # Targets to which this target links.
