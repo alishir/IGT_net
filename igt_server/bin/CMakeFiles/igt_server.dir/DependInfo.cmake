@@ -19,6 +19,7 @@ SET(CMAKE_TARGET_DEFINITIONS
   "QT_GUI_LIB"
   "QT_NETWORK_LIB"
   "QT_CORE_LIB"
+  "QT_DEBUG"
   )
 
 # Targets to which this target links.

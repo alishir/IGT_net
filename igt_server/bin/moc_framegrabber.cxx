@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'framegrabber.h'
 **
-** Created: Mon Feb 6 19:26:43 2012
+** Created: Mon Feb 6 21:02:40 2012
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.6.3)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_FrameGrabber[] = {
        4,       // revision
        0,       // classname
        0,    0, // classinfo
-       2,   14, // methods
+       3,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -35,13 +35,14 @@ static const uint qt_meta_data_FrameGrabber[] = {
 
  // slots: signature, parameters, type, tag, flags
       42,   13,   13,   13, 0x09,
+      49,   13,   13,   13, 0x09,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_FrameGrabber[] = {
     "FrameGrabber\0\0frame\0frameReady(IplImage*)\0"
-    "grab()\0"
+    "grab()\0readStdin(int)\0"
 };
 
 const QMetaObject FrameGrabber::staticMetaObject = {
@@ -75,9 +76,10 @@ int FrameGrabber::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         switch (_id) {
         case 0: frameReady((*reinterpret_cast< IplImage*(*)>(_a[1]))); break;
         case 1: grab(); break;
+        case 2: readStdin((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;
         }
-        _id -= 2;
+        _id -= 3;
     }
     return _id;
 }

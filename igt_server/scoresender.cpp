@@ -1,8 +1,9 @@
 #include "scoresender.h"
 
 ScoreSender::ScoreSender(QString scoreFilePath, QObject *parent) :
-        QThread(parent),
-        port(2345)
+        QThread(parent)
+        ,port(2345)
+        ,numCard(0)
 {
     this->scoreConnections = new QList<QTcpSocket*>();
     this->scoreServer = new QTcpServer(this);
@@ -40,7 +41,8 @@ void ScoreSender::sendScore()
     {
         selected = selectedDeck.at(0);
     }
-    qDebug() << "User selected deck: " << selected;
+    qDebug() << "Card: " << this->numCard << " Deck: " << selected;
+    this->numCard = this->numCard + 1;
     // TODO send result to
     switch(selected)
     {

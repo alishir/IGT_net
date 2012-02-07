@@ -12,6 +12,9 @@ SUFFIXES =
 
 .SUFFIXES: .hpux_make_needs_suffix_list
 
+# Produce verbose output by default.
+VERBOSE = 1
+
 # Suppress display of executed commands.
 $(VERBOSE).SILENT:
 
@@ -49,15 +52,15 @@ include CMakeFiles/igt_server.dir/flags.make
 CMakeFiles/igt_server.dir/webcam_stream.cpp.o: CMakeFiles/igt_server.dir/flags.make
 CMakeFiles/igt_server.dir/webcam_stream.cpp.o: ../webcam_stream.cpp
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles $(CMAKE_PROGRESS_1)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/igt_server.dir/webcam_stream.cpp.o"
+	@echo "Building CXX object CMakeFiles/igt_server.dir/webcam_stream.cpp.o"
 	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/igt_server.dir/webcam_stream.cpp.o -c /home/ali/doc/code/IGT_net/igt_server/webcam_stream.cpp
 
 CMakeFiles/igt_server.dir/webcam_stream.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/igt_server.dir/webcam_stream.cpp.i"
+	@echo "Preprocessing CXX source to CMakeFiles/igt_server.dir/webcam_stream.cpp.i"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/ali/doc/code/IGT_net/igt_server/webcam_stream.cpp > CMakeFiles/igt_server.dir/webcam_stream.cpp.i
 
 CMakeFiles/igt_server.dir/webcam_stream.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/igt_server.dir/webcam_stream.cpp.s"
+	@echo "Compiling CXX source to assembly CMakeFiles/igt_server.dir/webcam_stream.cpp.s"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/ali/doc/code/IGT_net/igt_server/webcam_stream.cpp -o CMakeFiles/igt_server.dir/webcam_stream.cpp.s
 
 CMakeFiles/igt_server.dir/webcam_stream.cpp.o.requires:
@@ -73,15 +76,15 @@ CMakeFiles/igt_server.dir/webcam_stream.cpp.o.provides.build: CMakeFiles/igt_ser
 CMakeFiles/igt_server.dir/sender.cpp.o: CMakeFiles/igt_server.dir/flags.make
 CMakeFiles/igt_server.dir/sender.cpp.o: ../sender.cpp
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles $(CMAKE_PROGRESS_2)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/igt_server.dir/sender.cpp.o"
+	@echo "Building CXX object CMakeFiles/igt_server.dir/sender.cpp.o"
 	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/igt_server.dir/sender.cpp.o -c /home/ali/doc/code/IGT_net/igt_server/sender.cpp
 
 CMakeFiles/igt_server.dir/sender.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/igt_server.dir/sender.cpp.i"
+	@echo "Preprocessing CXX source to CMakeFiles/igt_server.dir/sender.cpp.i"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/ali/doc/code/IGT_net/igt_server/sender.cpp > CMakeFiles/igt_server.dir/sender.cpp.i
 
 CMakeFiles/igt_server.dir/sender.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/igt_server.dir/sender.cpp.s"
+	@echo "Compiling CXX source to assembly CMakeFiles/igt_server.dir/sender.cpp.s"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/ali/doc/code/IGT_net/igt_server/sender.cpp -o CMakeFiles/igt_server.dir/sender.cpp.s
 
 CMakeFiles/igt_server.dir/sender.cpp.o.requires:
@@ -97,15 +100,15 @@ CMakeFiles/igt_server.dir/sender.cpp.o.provides.build: CMakeFiles/igt_server.dir
 CMakeFiles/igt_server.dir/framegrabber.cpp.o: CMakeFiles/igt_server.dir/flags.make
 CMakeFiles/igt_server.dir/framegrabber.cpp.o: ../framegrabber.cpp
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles $(CMAKE_PROGRESS_3)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/igt_server.dir/framegrabber.cpp.o"
+	@echo "Building CXX object CMakeFiles/igt_server.dir/framegrabber.cpp.o"
 	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/igt_server.dir/framegrabber.cpp.o -c /home/ali/doc/code/IGT_net/igt_server/framegrabber.cpp
 
 CMakeFiles/igt_server.dir/framegrabber.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/igt_server.dir/framegrabber.cpp.i"
+	@echo "Preprocessing CXX source to CMakeFiles/igt_server.dir/framegrabber.cpp.i"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/ali/doc/code/IGT_net/igt_server/framegrabber.cpp > CMakeFiles/igt_server.dir/framegrabber.cpp.i
 
 CMakeFiles/igt_server.dir/framegrabber.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/igt_server.dir/framegrabber.cpp.s"
+	@echo "Compiling CXX source to assembly CMakeFiles/igt_server.dir/framegrabber.cpp.s"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/ali/doc/code/IGT_net/igt_server/framegrabber.cpp -o CMakeFiles/igt_server.dir/framegrabber.cpp.s
 
 CMakeFiles/igt_server.dir/framegrabber.cpp.o.requires:
@@ -121,15 +124,15 @@ CMakeFiles/igt_server.dir/framegrabber.cpp.o.provides.build: CMakeFiles/igt_serv
 CMakeFiles/igt_server.dir/scoresender.cpp.o: CMakeFiles/igt_server.dir/flags.make
 CMakeFiles/igt_server.dir/scoresender.cpp.o: ../scoresender.cpp
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles $(CMAKE_PROGRESS_4)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/igt_server.dir/scoresender.cpp.o"
+	@echo "Building CXX object CMakeFiles/igt_server.dir/scoresender.cpp.o"
 	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/igt_server.dir/scoresender.cpp.o -c /home/ali/doc/code/IGT_net/igt_server/scoresender.cpp
 
 CMakeFiles/igt_server.dir/scoresender.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/igt_server.dir/scoresender.cpp.i"
+	@echo "Preprocessing CXX source to CMakeFiles/igt_server.dir/scoresender.cpp.i"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/ali/doc/code/IGT_net/igt_server/scoresender.cpp > CMakeFiles/igt_server.dir/scoresender.cpp.i
 
 CMakeFiles/igt_server.dir/scoresender.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/igt_server.dir/scoresender.cpp.s"
+	@echo "Compiling CXX source to assembly CMakeFiles/igt_server.dir/scoresender.cpp.s"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/ali/doc/code/IGT_net/igt_server/scoresender.cpp -o CMakeFiles/igt_server.dir/scoresender.cpp.s
 
 CMakeFiles/igt_server.dir/scoresender.cpp.o.requires:
@@ -145,15 +148,15 @@ CMakeFiles/igt_server.dir/scoresender.cpp.o.provides.build: CMakeFiles/igt_serve
 CMakeFiles/igt_server.dir/moc_sender.cxx.o: CMakeFiles/igt_server.dir/flags.make
 CMakeFiles/igt_server.dir/moc_sender.cxx.o: moc_sender.cxx
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles $(CMAKE_PROGRESS_5)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/igt_server.dir/moc_sender.cxx.o"
+	@echo "Building CXX object CMakeFiles/igt_server.dir/moc_sender.cxx.o"
 	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/igt_server.dir/moc_sender.cxx.o -c /home/ali/doc/code/IGT_net/igt_server/bin/moc_sender.cxx
 
 CMakeFiles/igt_server.dir/moc_sender.cxx.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/igt_server.dir/moc_sender.cxx.i"
+	@echo "Preprocessing CXX source to CMakeFiles/igt_server.dir/moc_sender.cxx.i"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/ali/doc/code/IGT_net/igt_server/bin/moc_sender.cxx > CMakeFiles/igt_server.dir/moc_sender.cxx.i
 
 CMakeFiles/igt_server.dir/moc_sender.cxx.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/igt_server.dir/moc_sender.cxx.s"
+	@echo "Compiling CXX source to assembly CMakeFiles/igt_server.dir/moc_sender.cxx.s"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/ali/doc/code/IGT_net/igt_server/bin/moc_sender.cxx -o CMakeFiles/igt_server.dir/moc_sender.cxx.s
 
 CMakeFiles/igt_server.dir/moc_sender.cxx.o.requires:
@@ -169,15 +172,15 @@ CMakeFiles/igt_server.dir/moc_sender.cxx.o.provides.build: CMakeFiles/igt_server
 CMakeFiles/igt_server.dir/moc_framegrabber.cxx.o: CMakeFiles/igt_server.dir/flags.make
 CMakeFiles/igt_server.dir/moc_framegrabber.cxx.o: moc_framegrabber.cxx
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles $(CMAKE_PROGRESS_6)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/igt_server.dir/moc_framegrabber.cxx.o"
+	@echo "Building CXX object CMakeFiles/igt_server.dir/moc_framegrabber.cxx.o"
 	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/igt_server.dir/moc_framegrabber.cxx.o -c /home/ali/doc/code/IGT_net/igt_server/bin/moc_framegrabber.cxx
 
 CMakeFiles/igt_server.dir/moc_framegrabber.cxx.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/igt_server.dir/moc_framegrabber.cxx.i"
+	@echo "Preprocessing CXX source to CMakeFiles/igt_server.dir/moc_framegrabber.cxx.i"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/ali/doc/code/IGT_net/igt_server/bin/moc_framegrabber.cxx > CMakeFiles/igt_server.dir/moc_framegrabber.cxx.i
 
 CMakeFiles/igt_server.dir/moc_framegrabber.cxx.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/igt_server.dir/moc_framegrabber.cxx.s"
+	@echo "Compiling CXX source to assembly CMakeFiles/igt_server.dir/moc_framegrabber.cxx.s"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/ali/doc/code/IGT_net/igt_server/bin/moc_framegrabber.cxx -o CMakeFiles/igt_server.dir/moc_framegrabber.cxx.s
 
 CMakeFiles/igt_server.dir/moc_framegrabber.cxx.o.requires:
@@ -193,15 +196,15 @@ CMakeFiles/igt_server.dir/moc_framegrabber.cxx.o.provides.build: CMakeFiles/igt_
 CMakeFiles/igt_server.dir/moc_scoresender.cxx.o: CMakeFiles/igt_server.dir/flags.make
 CMakeFiles/igt_server.dir/moc_scoresender.cxx.o: moc_scoresender.cxx
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles $(CMAKE_PROGRESS_7)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/igt_server.dir/moc_scoresender.cxx.o"
+	@echo "Building CXX object CMakeFiles/igt_server.dir/moc_scoresender.cxx.o"
 	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/igt_server.dir/moc_scoresender.cxx.o -c /home/ali/doc/code/IGT_net/igt_server/bin/moc_scoresender.cxx
 
 CMakeFiles/igt_server.dir/moc_scoresender.cxx.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/igt_server.dir/moc_scoresender.cxx.i"
+	@echo "Preprocessing CXX source to CMakeFiles/igt_server.dir/moc_scoresender.cxx.i"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/ali/doc/code/IGT_net/igt_server/bin/moc_scoresender.cxx > CMakeFiles/igt_server.dir/moc_scoresender.cxx.i
 
 CMakeFiles/igt_server.dir/moc_scoresender.cxx.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/igt_server.dir/moc_scoresender.cxx.s"
+	@echo "Compiling CXX source to assembly CMakeFiles/igt_server.dir/moc_scoresender.cxx.s"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/ali/doc/code/IGT_net/igt_server/bin/moc_scoresender.cxx -o CMakeFiles/igt_server.dir/moc_scoresender.cxx.s
 
 CMakeFiles/igt_server.dir/moc_scoresender.cxx.o.requires:
@@ -216,17 +219,17 @@ CMakeFiles/igt_server.dir/moc_scoresender.cxx.o.provides.build: CMakeFiles/igt_s
 
 moc_sender.cxx: ../sender.h
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles $(CMAKE_PROGRESS_8)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold "Generating moc_sender.cxx"
+	@echo "Generating moc_sender.cxx"
 	/usr/bin/moc-qt4 -I/usr/include/opencv -I/home/ali/dl/opencv/OpenCV-2.3.1/modules/highgui/include/\ /home/ali/dl/opencv/OpenCV-2.3.1/include -o /home/ali/doc/code/IGT_net/igt_server/bin/moc_sender.cxx /home/ali/doc/code/IGT_net/igt_server/sender.h
 
 moc_framegrabber.cxx: ../framegrabber.h
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles $(CMAKE_PROGRESS_9)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold "Generating moc_framegrabber.cxx"
+	@echo "Generating moc_framegrabber.cxx"
 	/usr/bin/moc-qt4 -I/usr/include/opencv -I/home/ali/dl/opencv/OpenCV-2.3.1/modules/highgui/include/\ /home/ali/dl/opencv/OpenCV-2.3.1/include -o /home/ali/doc/code/IGT_net/igt_server/bin/moc_framegrabber.cxx /home/ali/doc/code/IGT_net/igt_server/framegrabber.h
 
 moc_scoresender.cxx: ../scoresender.h
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/ali/doc/code/IGT_net/igt_server/bin/CMakeFiles $(CMAKE_PROGRESS_10)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold "Generating moc_scoresender.cxx"
+	@echo "Generating moc_scoresender.cxx"
 	/usr/bin/moc-qt4 -I/usr/include/opencv -I/home/ali/dl/opencv/OpenCV-2.3.1/modules/highgui/include/\ /home/ali/dl/opencv/OpenCV-2.3.1/include -o /home/ali/doc/code/IGT_net/igt_server/bin/moc_scoresender.cxx /home/ali/doc/code/IGT_net/igt_server/scoresender.h
 
 # Object files for target igt_server
@@ -254,7 +257,7 @@ igt_server: /usr/lib/libQtNetwork.so
 igt_server: /usr/lib/libQtCore.so
 igt_server: CMakeFiles/igt_server.dir/build.make
 igt_server: CMakeFiles/igt_server.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX executable igt_server"
+	@echo "Linking CXX executable igt_server"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/igt_server.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

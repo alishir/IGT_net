@@ -15,10 +15,13 @@ public:
     FrameGrabber(QMutex *frameMutex, bool *dataReady, QObject *parent);
     ~FrameGrabber();
 protected:
+    QTextStream *cin;
+    QSocketNotifier *notifier;
     void run();
 
 protected slots:
     void grab();
+    void readStdin(int);
 
 signals:
    void frameReady(IplImage *frame);
@@ -27,8 +30,10 @@ private:
     QTimer *timer;
     CvCapture *capture;
     IplImage *frame;
+    IplImage *offFrame;
     QMutex *frameMutex;
     bool *dataReady;
+    bool play;
 
 };
 

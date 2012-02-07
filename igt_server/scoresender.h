@@ -27,6 +27,7 @@ private:
     QTcpServer *scoreServer;
     QList<QTcpSocket *> *scoreConnections;
     int port;
+    int numCard;
 
 };
 

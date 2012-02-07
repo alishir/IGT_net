@@ -83,19 +83,10 @@ void Sender::clientDisconnected()
 
 void Sender::handleNewConnection()
 {
-    QTcpSocket *t = this->camServer->nextPendingConnection();
-    QTextStream qout(stdout);
-    char response;
-    qout << "Connection Request from " << t->peerAddress().toString() << "[Accept or Reject](A/r)?"  << endl;
-    scanf("%c\n", &response);
-    qout << "Your response: " << response << endl;
-    if (response == 'A' || response == 'a')
-    {
-        this->camConnections->append(t);
-        connect(t, SIGNAL(disconnected()), this, SLOT(clientDisconnected()));
-        //    connect(t, SIGNAL(bytesWritten(qint64)), this, SLOT(sendComplete(qint64)));
-        qDebug() << "New Connection Established :D";
-    }
+	QTcpSocket *t = this->camServer->nextPendingConnection();
+	this->camConnections->append(t);
+	connect(t, SIGNAL(disconnected()), this, SLOT(clientDisconnected()));
+	qDebug() << "New Connection Established :D";
 }
 
 void Sender::sendImage()
@@ -117,14 +108,9 @@ void Sender::sendImage()
 void Sender::getFrame(IplImage *frame)
 {
     //    qDebug() << "Getting Frame ...";
-    if (this->camConnections->size() == 0)
-    {
-        return;
-    }
     if (this->qImage == 0)
     {
         this->qImage = new QImage(frame->width, frame->height, QImage::Format_ARGB32);
-
     }
     this->frameMutex->lock();
     if (*(this->dataReady))

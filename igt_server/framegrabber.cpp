@@ -7,8 +7,26 @@ FrameGrabber::FrameGrabber(QMutex *frameMutex, bool *dataReady, QObject *parent)
     ,frameMutex(frameMutex)
     ,timer(0)
     ,dataReady(dataReady)
+    ,play(false)
 {
-//    cvNamedWindow("mywindow", CV_WINDOW_AUTOSIZE);
+    this->cin = new QTextStream(stdin, QIODevice::ReadOnly);
+    this->notifier = new QSocketNotifier(STDIN_FILENO, QSocketNotifier::Read, this);
+    connect(this->notifier, SIGNAL(activated(int)), this, SLOT(readStdin(int)));
+}
+
+void FrameGrabber::readStdin(int)
+{
+    QString cmd = cin->readLine();
+    if (cmd.at(0) == 'P' || cmd.at(0) == 'p')       // start playing the game
+    {
+        qDebug() << "Playing the Game ...";
+        this->play = true;
+    }
+    if (cmd.at(0) == 'S' || cmd.at(0) == 's')
+    {
+        qDebug() << "Stoped ...";
+        this->play = false;
+    }
 }
 
 FrameGrabber::~FrameGrabber()
@@ -54,5 +72,16 @@ void FrameGrabber::grab()
         }
     }
     this->frameMutex->unlock();
-    emit this->frameReady(this->frame);
+
+    if (this->play)
+    {
+        emit this->frameReady(this->frame);
+    }
+    else
+    {
+        this->offFrame = cvCreateImage(cvGetSize(this->frame), IPL_DEPTH_8U, 1);
+        this->offFrame = cvCloneImage(this->frame);
+        cvCircle(this->offFrame, cvPoint(this->frame->width / 2,this->frame->height / 2), 5, cvScalar(0,0,255), 12);
+        emit this->frameReady(this->offFrame);
+    }
 }
