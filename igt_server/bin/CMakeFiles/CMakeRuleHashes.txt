@@ -1,4 +1,0 @@
-# Hashes of file build rules.
-568c3822a0c2260603cfe6ba59debaed moc_framegrabber.cxx
-dd2b9a195090ee0ed6bd4d0e2d5ea7ad moc_scoresender.cxx
-20543c43c143f00f2976b6942a9cd113 moc_sender.cxx
