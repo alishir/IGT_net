@@ -1,1 +1,0 @@
-/usr/bin/c++      CMakeFiles/qimage_on_net_r.dir/qImageRecv.cpp.o  -o qimage_on_net_r -rdynamic -lQtGui -lQtCore 
