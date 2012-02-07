@@ -1,0 +1,1 @@
+/usr/bin/c++      CMakeFiles/qimage_on_net_s.dir/qImageSender.cpp.o  -o qimage_on_net_s -rdynamic -lQtGui -lQtCore 

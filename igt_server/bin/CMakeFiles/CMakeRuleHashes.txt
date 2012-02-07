@@ -1,0 +1,4 @@
+# Hashes of file build rules.
+b7cbff989e3bc2677fc92f99bf29bc62 moc_framegrabber.cxx
+3931511a96f3324cd1931a8225105bf9 moc_scoresender.cxx
+ae7bb7b5479ddd80a45175c113199882 moc_sender.cxx

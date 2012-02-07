@@ -1,0 +1,2 @@
+/home/ali/doc/code/igt_server/test/qiamge/build/CMakeFiles/qimage_on_net_r.dir
+/home/ali/doc/code/igt_server/test/qiamge/build/CMakeFiles/qimage_on_net_s.dir
