@@ -18,6 +18,9 @@ public:
     void setEMail(QString email);
     void setMobile(QString mobile);
 
+
+    int getId();
+
     void addAction(char action, float time);
     int save(QString path);
 

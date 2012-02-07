@@ -6,6 +6,7 @@
 #include <QKeyEvent>
 #include <QTcpSocket>
 #include <QTime>
+#include <QProcess>
 
 #include "igtsubject.h"
 
@@ -16,7 +17,7 @@ namespace Ui {
 class IGTScreen : public QMainWindow {
     Q_OBJECT
 public:
-    IGTScreen(IGTSubject *sub, QString srvIP, int port, QWidget *parent = 0);
+    IGTScreen(IGTSubject *sub, QString srvIP, int port, QString savePath, QWidget *parent=0);
     void setSubject(IGTSubject *sub);
     ~IGTScreen();
 
@@ -39,6 +40,11 @@ private:
 
     IGTSubject *subject;
     QTime *time;
+
+    QProcess *eyeTracker;
+    QStringList eyeTrackerArgs;
+
+    QString savePath;
 };
 
 #endif // IGTSCREEN_H

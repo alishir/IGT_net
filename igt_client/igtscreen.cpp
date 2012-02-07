@@ -3,13 +3,43 @@
 
 
 
-IGTScreen::IGTScreen(IGTSubject *sub, QString srvIP, int port, QWidget *parent) :
+IGTScreen::IGTScreen(IGTSubject *sub, QString srvIP, int port, QString savePath, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::IGTScreen),
     serverIP(srvIP),
     port(port),
-    subject(sub)
+    subject(sub),
+    savePath(savePath)
 {
+//    eyeTrackerArgs << "-f";
+    this->eyeTracker = new QProcess(this);
+    eyeTrackerArgs << "-f";
+    eyeTrackerArgs << "video4linux2";
+    eyeTrackerArgs << "-s";
+    eyeTrackerArgs << "320x240";
+    eyeTrackerArgs << "-r";
+    eyeTrackerArgs << "30";
+    eyeTrackerArgs << "-i";
+    eyeTrackerArgs << "/dev/video0";
+    eyeTrackerArgs << "-f";
+    eyeTrackerArgs << "oss";
+    eyeTrackerArgs << "-i";
+    eyeTrackerArgs << "/dev/dsp1";
+    eyeTrackerArgs << "-f";
+    eyeTrackerArgs << "avi";
+    if (savePath.at(savePath.size() - 1) != '/')
+    {
+        savePath.append("/");
+    }
+    eyeTrackerArgs << (savePath + QString::number(sub->getId()) + QString(".avi"));
+
+    qDebug() << eyeTrackerArgs;
+    this->eyeTracker->start("/usr/bin/ffmpeg", eyeTrackerArgs);
+    if (!this->eyeTracker->waitForStarted(500))
+    {
+        qDebug() << "eye tracker problem ...";
+    }
+
     ui->setupUi(this);
     this->dataSocket = new QTcpSocket(this);
     connect(this->dataSocket, SIGNAL(connected()), this, SLOT(handleConnection()));
@@ -75,9 +105,14 @@ void IGTScreen::keyPressEvent(QKeyEvent *event)
 void IGTScreen::closeEvent(QCloseEvent *e)
 {
     e->accept();
-    this->subject->save("/tmp/igt/");
+    this->subject->save(savePath);
     this->dataSocket->disconnectFromHost();
     delete this->subject;
+    this->eyeTracker->close();
+    if (!this->eyeTracker->waitForFinished(3000))
+    {
+        qDebug() << "eye tracker still running ...";
+    }
     emit this->destroyed();
 }
 

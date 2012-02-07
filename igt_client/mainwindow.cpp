@@ -70,7 +70,7 @@ void MainWindow::on_show_clicked()
 
     if (this->igt == 0)
     {       
-        this->igt = new IGTScreen(subject, srvIP, dataPort, this);
+        this->igt = new IGTScreen(subject, srvIP, dataPort, this->ui->dataPath->text(), this);
         connect(this->igt, SIGNAL(destroyed()), this, SLOT(on_igt_closed()));
     }
     if (this->imgThread == 0)

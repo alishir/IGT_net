@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Sun Feb 5 19:35:48 2012
+** Created: Tue Feb 7 00:04:03 2012
 **      by: Qt User Interface Compiler version 4.6.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -76,6 +76,8 @@ public:
     QVBoxLayout *verticalLayout;
     QLabel *label_2;
     QLineEdit *srvIP;
+    QLabel *label_12;
+    QLineEdit *dataPath;
     QSpacerItem *verticalSpacer;
     QHBoxLayout *horizontalLayout;
     QLabel *label_3;
@@ -93,7 +95,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
-        MainWindow->resize(428, 265);
+        MainWindow->resize(460, 371);
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         horizontalLayout_6 = new QHBoxLayout(centralWidget);
@@ -312,6 +314,16 @@ public:
 
         verticalLayout->addWidget(srvIP);
 
+        label_12 = new QLabel(centralWidget);
+        label_12->setObjectName(QString::fromUtf8("label_12"));
+
+        verticalLayout->addWidget(label_12);
+
+        dataPath = new QLineEdit(centralWidget);
+        dataPath->setObjectName(QString::fromUtf8("dataPath"));
+
+        verticalLayout->addWidget(dataPath);
+
         verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
         verticalLayout->addItem(verticalSpacer);
@@ -407,6 +419,8 @@ public:
          << QApplication::translate("MainWindow", "female", 0, QApplication::UnicodeUTF8)
         );
         label_2->setText(QApplication::translate("MainWindow", "Server:", 0, QApplication::UnicodeUTF8));
+        label_12->setText(QApplication::translate("MainWindow", "Data Path:", 0, QApplication::UnicodeUTF8));
+        dataPath->setText(QApplication::translate("MainWindow", "/home/ali/igt/", 0, QApplication::UnicodeUTF8));
         label_3->setText(QApplication::translate("MainWindow", "Cam Port:", 0, QApplication::UnicodeUTF8));
         label_4->setText(QApplication::translate("MainWindow", "Data Port:", 0, QApplication::UnicodeUTF8));
         show->setText(QApplication::translate("MainWindow", "show", 0, QApplication::UnicodeUTF8));

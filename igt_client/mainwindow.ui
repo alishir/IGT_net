@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>428</width>
-    <height>265</height>
+    <width>460</width>
+    <height>371</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -441,6 +441,20 @@
           </item>
           <item>
            <widget class="QLineEdit" name="srvIP"/>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>Data Path:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="dataPath">
+            <property name="text">
+             <string>/home/ali/igt/</string>
+            </property>
+           </widget>
           </item>
           <item>
            <spacer name="verticalSpacer">

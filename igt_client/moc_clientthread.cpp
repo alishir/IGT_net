@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'clientthread.h'
 **
-** Created: Sun Feb 5 19:36:00 2012
+** Created: Mon Feb 6 23:11:10 2012
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.6.3)
 **
 ** WARNING! All changes made in this file will be lost!

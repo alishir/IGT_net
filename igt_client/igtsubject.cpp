@@ -28,6 +28,11 @@ void IGTSubject::setGender(QString gender)
     this->gender = gender;
 }
 
+int IGTSubject::getId()
+{
+    return this->id;
+}
+
 void IGTSubject::setID(int id)
 {
     this->id = id;
