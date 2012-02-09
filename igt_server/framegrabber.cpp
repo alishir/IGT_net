@@ -8,6 +8,7 @@ FrameGrabber::FrameGrabber(QMutex *frameMutex, bool *dataReady, QObject *parent)
     ,timer(0)
     ,dataReady(dataReady)
     ,play(false)
+	,offFrame(0)
 {
     this->cin = new QTextStream(stdin, QIODevice::ReadOnly);
     this->notifier = new QSocketNotifier(STDIN_FILENO, QSocketNotifier::Read, this);
@@ -79,9 +80,7 @@ void FrameGrabber::grab()
     }
     else
     {
-        this->offFrame = cvCreateImage(cvGetSize(this->frame), IPL_DEPTH_8U, 1);
-        this->offFrame = cvCloneImage(this->frame);
-        cvCircle(this->offFrame, cvPoint(this->frame->width / 2,this->frame->height / 2), 5, cvScalar(0,0,255), 12);
-        emit this->frameReady(this->offFrame);
+        cvCircle(this->frame, cvPoint(this->frame->width / 2,this->frame->height / 2), 5, cvScalar(0,0,255), 12);
+        emit this->frameReady(this->frame);
     }
 }
