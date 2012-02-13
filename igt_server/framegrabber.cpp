@@ -80,7 +80,7 @@ void FrameGrabber::grab()
     }
     else
     {
-        cvCircle(this->frame, cvPoint(this->frame->width / 2,this->frame->height / 2), 5, cvScalar(0,0,255), 12);
+        cvCircle(this->frame, cvPoint(this->frame->width / 2,this->frame->height / 2), 5, cvScalar(75,75,75), 12);
         emit this->frameReady(this->frame);
     }
 }
