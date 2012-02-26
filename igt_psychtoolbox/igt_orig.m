@@ -15,7 +15,8 @@ function igt_orig(contact, sid, save_path)
 		is_deck_selected = 0;
 		show_decks(wPtr);
 	%	show_rewards_bar(wPtr, acc_reward, acc_punish);
-		[selected_deck select_time] = get_response();
+		[selected_deck] = get_response();
+		select_time = now();
 		current_reward = 0;
 		current_punish = 0;
 		if selected_deck(escape_key)
@@ -54,7 +55,8 @@ function igt_orig(contact, sid, save_path)
 		end
 	end
 	quit(old_pref);
-	save('game_play.dat', 'game_seq');
+	data_file = sprintf('%s/%d.dat', save_path, sid);
+	save(data_file, 'game_seq', 'contact', 'time_base');
 	system('killall ffmpeg');
 end
 
@@ -169,7 +171,7 @@ function show_rewards_bar(wPtr, reward_acc, punish_acc)
 end
 
 
-function [selected_deck secs] = get_response(wPtr)
+function [selected_deck] = get_response(wPtr)
 	key_is_down = 0;
 	FlushEvents;
 	tic
