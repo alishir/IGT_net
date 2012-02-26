@@ -2,6 +2,7 @@
 % "Characterization of the decision-making deficit of patients with ventromedial prefrontal cortex lesions"
 function igt_orig(contact, sid, save_path)
 	[wPtr, wRect, old_pref] = init_screen();
+	[pid, time_base] = start_eye_tracker(sid, save_path);
 	escape_key = KbName('ESCAPE');
 	i = 0;
 	decks = penalty_dist(40);	% 40 card in each deck
@@ -54,19 +55,14 @@ function igt_orig(contact, sid, save_path)
 	end
 	quit(old_pref);
 	save('game_play.dat', 'game_seq');
+	system('killall ffmpeg');
 end
 
 function [pid time_s] = start_eye_tracker(sid, save_path)
-	[pid, msg] = fork();
-	% if I'm child
-	if (pid == 0)
-		params = sprintf('-f video4linux2 -s 320x240 -r 30 -i /dev/video0 -f oss -i /dev/dsp -f avi %s/%d.avi', save_path, sid);
-		exec('ffmpeg', params);
-	else if (pid > 0)		% I'm parent
-		time_s = now();
-	else
-		disp('Error: could not fork()');
-	end
+	params = sprintf('ffmpeg -f video4linux2 -s 320x240 -r 30 -i /dev/video0 -f oss -i /dev/dsp -f avi %s/%d.avi', save_path, sid);
+	pid = system(params, [], 'async');
+	disp(pid);
+	time_s = now();
 end
 
 function [wPtr, wRect, old_pref] = init_screen()
