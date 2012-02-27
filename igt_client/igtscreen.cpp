@@ -20,11 +20,11 @@ IGTScreen::IGTScreen(IGTSubject *sub, QString srvIP, int port, QString savePath,
     eyeTrackerArgs << "-r";
     eyeTrackerArgs << "30";
     eyeTrackerArgs << "-i";
-    eyeTrackerArgs << "/dev/video0";
+    eyeTrackerArgs << "/dev/video";
     eyeTrackerArgs << "-f";
     eyeTrackerArgs << "oss";
     eyeTrackerArgs << "-i";
-    eyeTrackerArgs << "/dev/dsp1";
+    eyeTrackerArgs << "/dev/dsp";
     eyeTrackerArgs << "-f";
     eyeTrackerArgs << "avi";
     if (savePath.at(savePath.size() - 1) != '/')
