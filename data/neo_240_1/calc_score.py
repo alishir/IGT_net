@@ -61,7 +61,7 @@ def calc_scales(sub_score):
 
 def main():
 	try:
-		opts, args = getopt.getopt(sys.argv[1:], "i:o:hs:")
+		opts, args = getopt.getopt(sys.argv[1:], "i:o:hs:g:")
 	except getopt.GetoptError, err:
 		print str(err)
 		usage()
@@ -75,6 +75,8 @@ def main():
 			output_file = a
 		elif o == "-s":
 			score_sheet_file = a
+		elif o == "-g":
+			gp_file = a
 		else:
 			assert False, "unhandled option"
 	f = open(input_file, 'r')
@@ -84,16 +86,25 @@ def main():
 	sub_score = calc_score(sub_ans, score_sheet)
 	sub_scales = calc_scales(sub_score)
 	
-	gp = open(output_file, 'w')
+	of = open(output_file, 'w')
 	j = 0;
 	for scale in 'n e o a c'.split():
 		for sub in range(6):
-			gp.write("%c%d %d\n" % (scale, sub, sub_scales[sub * 5 + j]))
+			of.write("%c%d %d\n" % (scale, sub, sub_scales[sub * 5 + j]))
 		j = j + 1
 
-#	fw = open(output_file, 'w')
-#	for s in sub_score:
-#		fw.write("%d\n" % s)
+
+	gpf = open(gp_file, 'w')
+#	gpf.write("set style data histogram\n");
+#	gpf.write("set xtic ()\n");
+	j = 0;
+	for scale in 'N E O A C'.split():
+		gpf.write("%c" % scale);
+		for sub in range(6):
+			gpf.write(" %d" % sub_scales[sub * 5 + j])
+		gpf.write("\n")
+		j = j + 1
+
 
 
 if __name__ == "__main__":
