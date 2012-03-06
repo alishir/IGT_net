@@ -11,6 +11,7 @@
 
 import getopt
 import sys
+import csv
 
 
 def get_score(ans, score_type):
@@ -61,7 +62,7 @@ def calc_scales(sub_score):
 
 def main():
 	try:
-		opts, args = getopt.getopt(sys.argv[1:], "i:o:hs:g:")
+		opts, args = getopt.getopt(sys.argv[1:], "i:o:hs:g:l:")
 	except getopt.GetoptError, err:
 		print str(err)
 		usage()
@@ -69,16 +70,37 @@ def main():
 	for o, a in opts:
 		if o == "-h":
 			usage()
-		elif o == "-i":
+		elif o == "-i":		# raw input data
 			input_file = a
-		elif o == "-o":
+		elif o == "-o":		# csv output of personality vector
 			output_file = a
-		elif o == "-s":
+		elif o == "-s":		# score mapping file
 			score_sheet_file = a
-		elif o == "-g":
+		elif o == "-g":		# data for gnu plot
 			gp_file = a
+		elif o == "-l":		# gnuplot script output
+			plot_file = a
 		else:
 			assert False, "unhandled option"
+
+	base_filename = input_file.split('.')[0]
+	try:
+		output_file
+	except NameError:
+		output_file = base_filename + '.csv'
+	try:
+		score_sheet_file
+	except NameError:
+		score_sheet_file = 'score_map.map'
+	try:
+		gp_file
+	except NameError:
+		gp_file = base_filename + '.gpd'
+	try:
+		plot_file
+	except NameError:
+		plot_file = base_filename + '.gp'
+	
 	f = open(input_file, 'r')
 	fs = open(score_sheet_file, 'r')
 	sub_ans = f.readline().rstrip()
@@ -87,23 +109,32 @@ def main():
 	sub_scales = calc_scales(sub_score)
 	
 	of = open(output_file, 'w')
-	j = 0;
-	for scale in 'n e o a c'.split():
-		for sub in range(6):
-			of.write("%c%d %d\n" % (scale, sub, sub_scales[sub * 5 + j]))
-		j = j + 1
+	csv_w = csv.writer(of)
+	csv_w.writerow(sub_scales)
+	of.close()
 
 
-	gpf = open(gp_file, 'w')
-#	gpf.write("set style data histogram\n");
-#	gpf.write("set xtic ()\n");
+	gpd = open(gp_file, 'w')
 	j = 0;
 	for scale in 'N E O A C'.split():
-		gpf.write("%c" % scale);
+		gpd.write("%c" % scale);
 		for sub in range(6):
-			gpf.write(" %d" % sub_scales[sub * 5 + j])
-		gpf.write("\n")
+			gpd.write(" %d" % sub_scales[sub * 5 + j])
+		gpd.write("\n")
 		j = j + 1
+	gpd.close()
+
+	gp = open(plot_file, 'w')
+	gp.write("set terminal png nocrop enhanced font verdana 12 size 640,480\n")
+	gp.write("set output '%s.png'\n" % base_filename)
+	gp.write("set style data histogram\n")
+	gp.write("set yrange [0:40]\n")
+	gp.write("set xtic ()\n")
+	gp.write("set style fill solid 1.0 border -1\n")
+	gp.write("set key outside\n")
+	gp.write("set title 'subject %s profile'\n" % base_filename)
+	gp.write("plot '%s' using 2:xtic(1) ti 'Facet #1', '' u 3 ti 'Facet #2', '' u 4 ti 'Facet #3', '' u 5 ti 'Facet #4', '' u 6 ti 'Facet #5', '' u 7 ti 'Facet #6'\n" % gp_file)
+	gp.close()
 
 
 
