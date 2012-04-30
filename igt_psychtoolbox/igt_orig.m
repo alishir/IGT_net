@@ -8,15 +8,15 @@ function igt_orig(contact, sid, save_path)
 	decks = penalty_dist(40);	% 40 card in each deck
 	acc_reward = 0;
 	acc_punish = 0;
-	game_seq = zeros(4,100);	% sequence of card selection
+	max_itr = 4;
+	game_seq = zeros(3,max_itr);	% sequence of card selection
+	resp_times = zeros(max_itr,6);
 	itr = 1;
-	max_itr = 110;
 	while itr < max_itr			% iteration of card selection by subject
 		is_deck_selected = 0;
 		show_decks(wPtr);
 	%	show_rewards_bar(wPtr, acc_reward, acc_punish);
-		[selected_deck] = get_response();
-		select_time = now();
+		[selected_deck, resp_time] = get_response();
 		current_reward = 0;
 		current_punish = 0;
 		if selected_deck(escape_key)
@@ -47,7 +47,8 @@ function igt_orig(contact, sid, save_path)
 			is_deck_selected = 1;
 		end
 		if is_deck_selected
-			game_seq(:,itr) = [KbName(selected_deck); current_reward; current_punish; select_time];
+			resp_times(itr,:) = resp_time;
+			game_seq(:,itr) = [KbName(selected_deck); current_reward; current_punish];
 			itr = itr + 1;
 			show_msg(wPtr, current_reward, current_punish, KbName(selected_deck));
 			acc_reward = acc_reward + current_reward;
@@ -56,15 +57,24 @@ function igt_orig(contact, sid, save_path)
 	end
 	quit(old_pref);
 	data_file = sprintf('%s/%d.dat', save_path, sid);
-	save(data_file, 'game_seq', 'contact', 'time_base');
+	save(data_file, 'game_seq', 'contact', 'time_base', 'resp_times');
 	system('killall ffmpeg');
+end
+
+function [sec] = clock_to_sec(cl)
+	base = 1;
+	sec = 0.0;
+	for i=0:5
+		sec = sec + cl(6 - i) * base;
+		base = base * 60;
+	end
 end
 
 function [pid time_s] = start_eye_tracker(sid, save_path)
 	params = sprintf('ffmpeg -f video4linux2 -s 320x240 -r 30 -i /dev/video0 -f oss -i /dev/dsp -f avi %s/%d.avi', save_path, sid);
 	pid = system(params, [], 'async');
 	disp(pid);
-	time_s = now();
+	time_s = clock()
 end
 
 function [wPtr, wRect, old_pref] = init_screen()
@@ -171,7 +181,7 @@ function show_rewards_bar(wPtr, reward_acc, punish_acc)
 end
 
 
-function [selected_deck] = get_response(wPtr)
+function [selected_deck, resp_time] = get_response(wPtr)
 	key_is_down = 0;
 	FlushEvents;
 	tic
@@ -180,7 +190,7 @@ function [selected_deck] = get_response(wPtr)
 %		selected_deck = KbName(key_code);
 		selected_deck = key_code;
 	end
-	disp(secs);
+	resp_time = clock();
 	while KbCheck; end
 end
 
