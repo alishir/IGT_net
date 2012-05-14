@@ -2,20 +2,22 @@
 % "Characterization of the decision-making deficit of patients with ventromedial prefrontal cortex lesions"
 function igt_orig(contact, sid, save_path)
 	[wPtr, wRect, old_pref] = init_screen();
-	[pid, time_base] = start_eye_tracker(sid, save_path);
 	escape_key = KbName('ESCAPE');
 	i = 0;
 	decks = penalty_dist(40);	% 40 card in each deck
 	acc_reward = 0;
 	acc_punish = 0;
-	max_itr = 4;
+	max_itr = 101;
 	game_seq = zeros(3,max_itr);	% sequence of card selection
 	resp_times = zeros(max_itr,6);
+	show_decks(wPtr, decks);
+	wait_for_start(wPtr);
+	[pid, time_base] = start_eye_tracker(sid, save_path);
 	itr = 1;
 	while itr < max_itr			% iteration of card selection by subject
 		is_deck_selected = 0;
-		show_decks(wPtr);
 	%	show_rewards_bar(wPtr, acc_reward, acc_punish);
+		show_decks(wPtr, decks);
 		[selected_deck, resp_time] = get_response();
 		current_reward = 0;
 		current_punish = 0;
@@ -55,11 +57,58 @@ function igt_orig(contact, sid, save_path)
 			acc_punish = acc_punish + current_punish;
 		end
 	end
+	finished_him(wPtr);
 	quit(old_pref);
 	data_file = sprintf('%s/%d.dat', save_path, sid);
 	save(data_file, 'game_seq', 'contact', 'time_base', 'resp_times');
-	system('killall ffmpeg');
 end
+
+function finished_him(wPtr)
+	white = WhiteIndex(wPtr); % pixel value for white
+	black = BlackIndex(wPtr); % pixel value for black
+	gray = (white + black) / 2;
+	screen_size = Screen('Resolution', 0);
+	w_space = screen_size.width / 2;
+	h_space = screen_size.height / 3;
+	offset = 40;
+	offset_w = 120;
+	text_h = h_space * 1.5;
+	text_w = w_space;
+	Screen('TextFont', wPtr, char('Helvetica'));
+	Screen('TextStyle', wPtr, 1);
+	Screen('TextSize', wPtr, 30);
+	Screen('DrawText', wPtr, disp('Game has been Finished'), text_w - offset_w, text_h + 80, black, gray);
+	rect = [(screen_size.width / 2) (screen_size.height / 2) (screen_size.width / 2 + 20) (screen_size.height / 2 + 20)];
+	Screen('FillOval', wPtr, [0,0,0], rect);
+	Screen(wPtr, 'Flip', [], 1);
+	system('killall ffmpeg');
+	GetChar();
+	Screen('FillOval', wPtr, gray, rect);
+	Screen(wPtr, 'Flip');
+end
+function wait_for_start(wPtr)
+	white = WhiteIndex(wPtr); % pixel value for white
+	black = BlackIndex(wPtr); % pixel value for black
+	gray = (white + black) / 2;
+	screen_size = Screen('Resolution', 0);
+	w_space = screen_size.width / 2;
+	h_space = screen_size.height / 3;
+	offset = 40;
+	offset_w = 120;
+	text_h = h_space * 1.5;
+	text_w = w_space;
+	Screen('TextFont', wPtr, char('Helvetica'));
+	Screen('TextStyle', wPtr, 1);
+	Screen('TextSize', wPtr, 30);
+	Screen('DrawText', wPtr, disp('press SPACE to start'), text_w - offset_w, text_h + 80, black, gray);
+	rect = [(screen_size.width / 2) (screen_size.height / 2) (screen_size.width / 2 + 20) (screen_size.height / 2 + 20)];
+	Screen('FillOval', wPtr, [0,0,0], rect);
+	Screen(wPtr, 'Flip', [], 1);
+	GetChar();
+	Screen('FillOval', wPtr, gray, rect);
+	Screen(wPtr, 'Flip');
+end
+
 
 function [sec] = clock_to_sec(cl)
 	base = 1;
@@ -85,6 +134,7 @@ function [wPtr, wRect, old_pref] = init_screen()
 	[wPtr, wRect] = Screen('OpenWindow', screenid, 0, [], 32, 2);
 	white = WhiteIndex(wPtr); % pixel value for white
 	black = BlackIndex(wPtr); % pixel value for black
+	Screen('BlendFunction', wPtr, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	gray = (white + black) / 2;
 	Screen(wPtr, 'FillRect', gray);
 end
@@ -94,7 +144,7 @@ function quit(old_pref)
 	Screen('Preference', 'verbosity', old_pref);
 end
 
-function show_decks(wPtr)
+function show_decks(wPtr, decks)
 	screen_size = Screen('Resolution', 0);
 	w_space = screen_size.width / 5;	% width space
 	h_space = screen_size.height / 3;	
@@ -107,14 +157,32 @@ function show_decks(wPtr)
 %	textureIndex = Screen('MakeTexture', wPtr, double(img));
 	% deck with labels
 	imgA = imread('./images/a.jpeg', 'JPG');
-	textureA = Screen('MakeTexture', wPtr, double(imgA));
 	imgB = imread('./images/b.jpeg', 'JPG');
-	textureB = Screen('MakeTexture', wPtr, double(imgB));
 	imgC = imread('./images/c.jpeg', 'JPG');
-	textureC = Screen('MakeTexture', wPtr, double(imgC));
 	imgD = imread('./images/d.jpeg', 'JPG');
+	textureA = Screen('MakeTexture', wPtr, double(imgA));
+	textureB = Screen('MakeTexture', wPtr, double(imgB));
+	textureC = Screen('MakeTexture', wPtr, double(imgC));
 	textureD = Screen('MakeTexture', wPtr, double(imgD));
+
+	if (decks.index(1,1) == 40)
+		imgA = imread('./images/blank.jpeg', 'JPG');
+	end
+	if (decks.index(1,2) == 40)
+		imgB = imread('./images/blank.jpeg', 'JPG');
+	end
+	if (decks.index(1,3) == 40)
+		imgC = imread('./images/blank.jpeg', 'JPG');
+	end
+	if (decks.index(1,4) == 40)
+		imgD = imread('./images/blank.jpeg', 'JPG');
+	end
 	
+	textureA = Screen('MakeTexture', wPtr, double(imgA));
+	textureB = Screen('MakeTexture', wPtr, double(imgB));
+	textureC = Screen('MakeTexture', wPtr, double(imgC));
+	textureD = Screen('MakeTexture', wPtr, double(imgD));
+
 	shadow_offset = [5 5 5 5];
 	deck_A = [pos_x, pos_y, pos_x + card_width, pos_y + card_height];
 	deck_A_shadow_1 = deck_A + shadow_offset;
@@ -204,7 +272,7 @@ function show_msg(wPtr, reward, punish, deck)
 	text_w = w_space;
 
 	msg_text1 = disp(['You won: ']);
-	msg_text2 = disp(['But lose: ']);
+	msg_text2 = disp(['But lost: ']);
 %	msg_text = disp(['You won ', disp(reward), ' ,But lose ', disp(punish), ' from deck ', disp(deck)]);
 %	Screen('DrawText', wPtr, msg_text, 300, 600, [0 0 156], [255 255 255]);
 	white = WhiteIndex(wPtr); % pixel value for white
@@ -217,13 +285,14 @@ function show_msg(wPtr, reward, punish, deck)
 	Screen('TextSize', wPtr, 30);
 	Screen('DrawText', wPtr, msg_text1, text_w - offset_w, text_h, black, gray);
 	Screen('DrawText', wPtr, disp(reward), text_w + offset_w, text_h, black, gray);
-	Screen('DrawText', wPtr, msg_text2, text_w - offset_w, text_h + offset, black, gray);
 	if (punish == 0)
-		Screen('DrawText', wPtr, disp(punish), text_w + offset_w + 10, text_h + offset, black, gray);	% zero is right aligned
+%		Screen('DrawText', wPtr, msg_text2, text_w - offset_w, text_h + offset, black, gray);
+%		Screen('DrawText', wPtr, disp(punish), text_w + offset_w + 10, text_h + offset, black, gray);	% zero is right aligned
 	else
+		Screen('DrawText', wPtr, msg_text2, text_w - offset_w, text_h + offset, black, gray);
 		Screen('DrawText', wPtr, disp(punish), text_w + offset_w, text_h + offset, black, gray);		% other numbers are left aligned
 	end
 	Screen('Flip', wPtr);
 	tic
-	while toc < 2.5 end;
+	while toc < 1.5 end;
 end
