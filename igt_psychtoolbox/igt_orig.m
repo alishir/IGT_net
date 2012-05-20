@@ -7,7 +7,7 @@ function igt_orig(contact, sid, save_path)
 	decks = penalty_dist(40);	% 40 card in each deck
 	acc_reward = 0;
 	acc_punish = 0;
-	max_itr = 101;
+	max_itr = 102;
 	game_seq = zeros(3,max_itr);	% sequence of card selection
 	resp_times = zeros(max_itr,6);
 	show_decks(wPtr, decks);
@@ -25,28 +25,36 @@ function igt_orig(contact, sid, save_path)
 			break;
 		end
 		if KbName(selected_deck) == 'a' || KbName(selected_deck) == 'A' || KbName(selected_deck) == '1'
-			current_reward = decks.reward(1,decks.index(1,1));
-			current_punish = decks.punish(1,decks.index(1,1));
-			decks.index(1,1) = decks.index(1,1) + 1;
-			is_deck_selected = 1;
+			if (decks.index(1,1) <= 40)
+				current_reward = decks.reward(1,decks.index(1,1));
+				current_punish = decks.punish(1,decks.index(1,1));
+				decks.index(1,1) = decks.index(1,1) + 1;
+				is_deck_selected = 1;
+			end
 		end
 		if KbName(selected_deck) == 'b' || KbName(selected_deck) == 'B' || KbName(selected_deck) == '2'
-			current_reward = decks.reward(2,decks.index(1,2));
-			current_punish = decks.punish(2,decks.index(1,2));
-			decks.index(1,2) = decks.index(1,2) + 1;
-			is_deck_selected = 1;
+			if (decks.index(1,2) <= 40)
+				current_reward = decks.reward(2,decks.index(1,2));
+				current_punish = decks.punish(2,decks.index(1,2));
+				decks.index(1,2) = decks.index(1,2) + 1;
+				is_deck_selected = 1;
+			end
 		end
 		if KbName(selected_deck) == 'c' || KbName(selected_deck) == 'C' || KbName(selected_deck) == '3'
-			current_reward = decks.reward(3,decks.index(1,3));
-			current_punish = decks.punish(3,decks.index(1,3));
-			decks.index(1,3) = decks.index(1,3) + 1;
-			is_deck_selected = 1;
+			if (decks.index(1,3) <= 40)
+				current_reward = decks.reward(3,decks.index(1,3));
+				current_punish = decks.punish(3,decks.index(1,3));
+				decks.index(1,3) = decks.index(1,3) + 1;
+				is_deck_selected = 1;
+			end
 		end
 		if KbName(selected_deck) == 'd' || KbName(selected_deck) == 'D' || KbName(selected_deck) == '4'
-			current_reward = decks.reward(4,decks.index(1,4));
-			current_punish = decks.punish(4,decks.index(1,4));
-			decks.index(1,4) = decks.index(1,4) + 1;
-			is_deck_selected = 1;
+			if (decks.index(1,4) <= 40)
+				current_reward = decks.reward(4,decks.index(1,4));
+				current_punish = decks.punish(4,decks.index(1,4));
+				decks.index(1,4) = decks.index(1,4) + 1;
+				is_deck_selected = 1;
+			end
 		end
 		if is_deck_selected
 			resp_times(itr,:) = resp_time;
@@ -165,16 +173,16 @@ function show_decks(wPtr, decks)
 	textureC = Screen('MakeTexture', wPtr, double(imgC));
 	textureD = Screen('MakeTexture', wPtr, double(imgD));
 
-	if (decks.index(1,1) == 40)
+	if (decks.index(1,1) > 40)
 		imgA = imread('./images/blank.jpeg', 'JPG');
 	end
-	if (decks.index(1,2) == 40)
+	if (decks.index(1,2) > 40)
 		imgB = imread('./images/blank.jpeg', 'JPG');
 	end
-	if (decks.index(1,3) == 40)
+	if (decks.index(1,3) > 40)
 		imgC = imread('./images/blank.jpeg', 'JPG');
 	end
-	if (decks.index(1,4) == 40)
+	if (decks.index(1,4) > 40)
 		imgD = imread('./images/blank.jpeg', 'JPG');
 	end
 	
@@ -262,6 +270,49 @@ function [selected_deck, resp_time] = get_response(wPtr)
 	while KbCheck; end
 end
 
+function mark_selected_deck(wPtr, selected_deck)
+	screen_size = Screen('Resolution', 0);
+	w_space = screen_size.width / 5;	% width space
+	h_space = screen_size.height / 3;	
+	pos_x = w_space / 5;		% || s |c| s |c| s |c| s |c| s ||	there are 5 space in horizon
+	pos_y = h_space / 6;
+	card_width = w_space;
+	card_height = h_space;
+	% general Deck
+%	img = imread('./images/decker03.jpeg', 'JPG');
+%	textureIndex = Screen('MakeTexture', wPtr, double(img));
+	% deck with labels
+	shadow_offset = [5 5 5 5];
+	deck_A = [pos_x, pos_y, pos_x + card_width, pos_y + card_height];
+	deck_A_shadow_3 = deck_A + 3 * shadow_offset;
+
+	deck_B = deck_A + [pos_x + card_width, 0, pos_x + card_width, 0];
+	deck_B_shadow_3 = deck_B + 3 * shadow_offset;
+
+	deck_C = deck_B + [pos_x + card_width, 0, pos_x + card_width, 0];
+	deck_C_shadow_3 = deck_C + 3 * shadow_offset;
+
+	deck_D = deck_C + [pos_x + card_width, 0, pos_x + card_width, 0];
+	deck_D_shadow_3 = deck_D + 3 * shadow_offset;
+	if (selected_deck == 'a')
+		img = imread('./images/a_sel.jpeg', 'JPG');
+		deck_shadow = deck_A_shadow_3;
+	elseif (selected_deck == 'b')
+		img = imread('./images/b_sel.jpeg', 'JPG');
+		deck_shadow = deck_B_shadow_3;
+	elseif (selected_deck == 'c')
+		img = imread('./images/c_sel.jpeg', 'JPG');
+		deck_shadow = deck_C_shadow_3;
+	elseif (selected_deck == 'd')
+		img = imread('./images/d_sel.jpeg', 'JPG');
+		deck_shadow = deck_D_shadow_3;
+	end
+
+	texture = Screen('MakeTexture', wPtr, double(img));
+	Screen('DrawTextures', wPtr, texture, [], [deck_shadow']);
+end
+
+
 function show_msg(wPtr, reward, punish, deck)
 	screen_size = Screen('Resolution', 0);
 	w_space = screen_size.width / 2;
@@ -280,6 +331,7 @@ function show_msg(wPtr, reward, punish, deck)
 	gray = (white + black) / 2;
 %	Screen('TextFont', wPtr, char('sans-serif'));
 
+	mark_selected_deck(wPtr, deck)
 	Screen('TextFont', wPtr, char('Helvetica'));
 	Screen('TextStyle', wPtr, 1);
 	Screen('TextSize', wPtr, 30);
