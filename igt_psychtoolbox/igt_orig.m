@@ -138,6 +138,7 @@ function [wPtr, wRect, old_pref] = init_screen()
 	AssertOpenGL;
 	old_pref = Screen('Preference', 'verbosity', 0);		% contorl debuging checks
 	screenid = max(Screen('Screens'));
+	HideCursor();
 
 	[wPtr, wRect] = Screen('OpenWindow', screenid, 0, [], 32, 2);
 	white = WhiteIndex(wPtr); % pixel value for white
@@ -294,16 +295,16 @@ function mark_selected_deck(wPtr, selected_deck)
 
 	deck_D = deck_C + [pos_x + card_width, 0, pos_x + card_width, 0];
 	deck_D_shadow_3 = deck_D + 3 * shadow_offset;
-	if (selected_deck == 'a')
+	if (selected_deck == 'a' || selected_deck == 'A')
 		img = imread('./images/a_sel.jpeg', 'JPG');
 		deck_shadow = deck_A_shadow_3;
-	elseif (selected_deck == 'b')
+	elseif (selected_deck == 'b' || selected_deck == 'B')
 		img = imread('./images/b_sel.jpeg', 'JPG');
 		deck_shadow = deck_B_shadow_3;
-	elseif (selected_deck == 'c')
+	elseif (selected_deck == 'c' || selected_deck == 'C')
 		img = imread('./images/c_sel.jpeg', 'JPG');
 		deck_shadow = deck_C_shadow_3;
-	elseif (selected_deck == 'd')
+	elseif (selected_deck == 'd' || selected_deck == 'D')
 		img = imread('./images/d_sel.jpeg', 'JPG');
 		deck_shadow = deck_D_shadow_3;
 	end
@@ -346,5 +347,5 @@ function show_msg(wPtr, reward, punish, deck)
 	end
 	Screen('Flip', wPtr);
 	tic
-	while toc < 1.5 end;
+	while toc < 1.25 end;
 end
