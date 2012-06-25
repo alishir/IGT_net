@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'igtscreen.ui'
 **
-** Created: Sun Feb 5 19:35:48 2012
-**      by: Qt User Interface Compiler version 4.6.3
+** Created: Mon Jun 25 09:10:19 2012
+**      by: Qt User Interface Compiler version 4.6.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
