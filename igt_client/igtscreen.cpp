@@ -20,7 +20,7 @@ IGTScreen::IGTScreen(IGTSubject *sub, QString srvIP, int port, QString savePath,
     eyeTrackerArgs << "-r";
     eyeTrackerArgs << "30";
     eyeTrackerArgs << "-i";
-    eyeTrackerArgs << "/dev/video";
+    eyeTrackerArgs << "/dev/video0";
     eyeTrackerArgs << "-f";
     eyeTrackerArgs << "oss";
     eyeTrackerArgs << "-i";
