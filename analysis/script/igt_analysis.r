@@ -235,8 +235,8 @@ block_dist <- function(x, y)
 {
   #return(sum(sqrt((x - y) ^ 2 * t(seq(1,5)))));
   #return(sum(sqrt((x - y) ^ 2 * t(c(1,1,1,0,0)))));
-  return(sum(sqrt((x - y) ^ 2 * t(c(0,0,0,1,1)))));
-  #return(sum(sqrt((x - y) ^ 2 * t(c(1,1,1,1,1)))));
+  #return(sum(sqrt((x - y) ^ 2 * t(c(0,0,0,1,1)))));
+  return(sum(sqrt((x - y) ^ 2 * t(c(1,1,1,1,1)))));
 }
 
 
@@ -256,6 +256,45 @@ within_group_cluster <- function(score, group_name)
 	detach('package:proxy');
 	return(list("first" = clu_1st, "second" = clu_2nd));
 }
+
+calc_good_bad <- function(trial_choise)
+{
+  len = length(trial_choise);
+  good_bad = matrix(nrow = 1, ncol = len + 1);
+  good_bad[1, 1] = 0;
+  for (i in seq(1,len))
+  {
+    ch = trial_choise[i] - 96;  # deck A is 97, convert to matrix index
+    if (ch < 3)
+	{
+      good_bad[1, i + 1] = good_bad[1, i]  - 1;
+	}
+    else
+	{
+      good_bad[1, i + 1] = good_bad[1, i]  + 1;
+	}
+  }
+  return(good_bad);
+}
+
+calc_acc_reward <- function(trial_choise)
+{
+  rew_pun = read.octave('pen.dat');
+  len = length(trial_choise);
+  acc_rew = matrix(nrow = 1, ncol = len + 1);
+  ind = matrix(c(1,1,1,1), nrow = 4, ncol = 1);
+  acc_rew[1,1] = 2000;  # initial deposit!
+  for (i in seq(1,len))
+  {
+    ch = trial_choise[i] - 96;  # deck A is 97, convert to matrix index
+    pin = ind[ch, 1];       # punishment index
+#    print(sprintf("i: %d, pin: %d, ch: %d", i, pin, ch));
+    acc_rew[1, i + 1] = acc_rew[1, i] + rew_pun$reward[ch, i] - rew_pun$punish[ch, pin];
+    ind[ch, 1] = ind[ch, 1] + 1;
+  }
+  return(acc_rew);
+}
+
 
 igt_doit <- function(igt_path, sub_path)
 {
@@ -405,6 +444,107 @@ igt_doit <- function(igt_path, sub_path)
 	dev.off();
 	
   
+  ### PLOT Time Series ####
+	ratio = 2;
+	png('/tmp/acc_reward.png', width = 1360 * ratio, height = 768 * ratio);
+	attach(mtcars);
+	# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
+	layout(matrix(c(1, 2, 3, 4), nrow = 2, ncol = 2, byrow = TRUE));
+  
+  # COM Best #
+  ts_len = 101;   # trial length
+  com_best_ts = matrix(nrow = nrow(com_best_subs), ncol = ts_len);
+  rownames(com_best_ts) = rownames(com_best_subs);
+  for (sub_name in rownames(com_best_subs))
+  {
+    print(sub_name);
+    com_best_ts[sub_name, ] = calc_acc_reward(dat[sub_name, ]);
+  }
+  matplot(t(com_best_ts), type = 'o', pch=1:nrow(com_best_ts), 
+          col=1:nrow(com_best_ts), bg=1:nrow(com_best_ts), main = "COM BEST", lwd = 3, cex.axis = 3, cex.main = 3);
+  
+  com_worst_ts = matrix(nrow = nrow(com_worst_subs), ncol = ts_len);
+  rownames(com_worst_ts) = rownames(com_worst_subs);
+  for (sub_name in rownames(com_worst_subs))
+  {
+    print(sub_name);
+    com_worst_ts[sub_name, ] = calc_acc_reward(dat[sub_name, ]);
+  }
+  matplot(t(com_worst_ts), type = 'o', pch=1:nrow(com_worst_ts), 
+          col=1:nrow(com_worst_ts), bg=1:nrow(com_worst_ts), main = "COM WORST", lwd = 3, cex.axis = 3, cex.main = 3);
+  
+
+  pen_best_ts = matrix(nrow = nrow(pen_best_subs), ncol = ts_len);
+  rownames(pen_best_ts) = rownames(pen_best_subs);
+  for (sub_name in rownames(pen_best_subs))
+  {
+    print(sub_name);
+    pen_best_ts[sub_name, ] = calc_acc_reward(dat[sub_name, ]);
+  }
+  matplot(t(pen_best_ts), type = 'o', pch=1:nrow(pen_best_ts), 
+          col=1:nrow(pen_best_ts), bg=1:nrow(pen_best_ts), main = "PEN BEST", lwd = 3, cex.axis = 3, cex.main = 3);
+  
+  pen_worst_ts = matrix(nrow = nrow(pen_worst_subs), ncol = ts_len);
+  rownames(pen_worst_ts) = rownames(pen_worst_subs);
+  for (sub_name in rownames(pen_worst_subs))
+  {
+    print(sub_name);
+    pen_worst_ts[sub_name, ] = calc_acc_reward(dat[sub_name, ]);
+  }
+  matplot(t(pen_worst_ts), type = 'o', pch=1:nrow(pen_worst_ts), 
+          col=1:nrow(pen_worst_ts), bg=1:nrow(pen_worst_ts), main = "PEN WORST", lwd = 3, cex.axis = 3, cex.main = 3);
+  
+  dev.off();
+  
+  
+	### PLOT Good-BadTime Series ####
+	ratio = 2;
+	png('/tmp/good_bad.png', width = 1360 * ratio, height = 768 * ratio);
+	attach(mtcars);
+	# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
+	layout(matrix(c(1, 2, 3, 4), nrow = 2, ncol = 2, byrow = TRUE));
+	
+	# COM Best #
+	ts_len = 101;   # trial length
+	com_best_gb_ts = matrix(nrow = nrow(com_best_subs), ncol = ts_len);
+	rownames(com_best_gb_ts) = rownames(com_best_subs);
+	for (sub_name in rownames(com_best_subs))
+	{
+	  com_best_gb_ts[sub_name, ] = calc_good_bad(dat[sub_name, ]);
+	}
+	matplot(t(com_best_gb_ts), type = 'o', pch=1:nrow(com_best_gb_ts), 
+	        col=1:nrow(com_best_gb_ts), bg=1:nrow(com_best_gb_ts), main = "COM BEST", lwd = 3, cex.axis = 3, cex.main = 3);
+	
+	com_worst_gb_ts = matrix(nrow = nrow(com_worst_subs), ncol = ts_len);
+	rownames(com_worst_gb_ts) = rownames(com_worst_subs);
+	for (sub_name in rownames(com_worst_subs))
+	{
+	  com_worst_gb_ts[sub_name, ] = calc_good_bad(dat[sub_name, ]);
+	}
+	matplot(t(com_worst_gb_ts), type = 'o', pch=1:nrow(com_worst_gb_ts), 
+	        col=1:nrow(com_worst_gb_ts), bg=1:nrow(com_worst_gb_ts), main = "COM WORST", lwd = 3, cex.axis = 3, cex.main = 3);
+	
+	pen_best_gb_ts = matrix(nrow = nrow(pen_best_subs), ncol = ts_len);
+	rownames(pen_best_gb_ts) = rownames(pen_best_subs);
+	for (sub_name in rownames(pen_best_subs))
+	{
+	  pen_best_gb_ts[sub_name, ] = calc_good_bad(dat[sub_name, ]);
+	}
+	matplot(t(pen_best_gb_ts), type = 'o', pch=1:nrow(pen_best_gb_ts), 
+	        col=1:nrow(pen_best_gb_ts), bg=1:nrow(pen_best_gb_ts), main = "PEN BEST", lwd = 3, cex.axis = 3, cex.main = 3);
+	
+	pen_worst_gb_ts = matrix(nrow = nrow(pen_worst_subs), ncol = ts_len);
+	rownames(pen_worst_gb_ts) = rownames(pen_worst_subs);
+	for (sub_name in rownames(pen_worst_subs))
+	{
+	  pen_worst_gb_ts[sub_name, ] = calc_good_bad(dat[sub_name, ]);
+	}
+	matplot(t(pen_worst_gb_ts), type = 'o', pch=1:nrow(pen_worst_gb_ts), 
+	        col=1:nrow(pen_worst_gb_ts), bg=1:nrow(pen_worst_gb_ts), main = "PEN WORST", lwd = 3, cex.axis = 3, cex.main = 3);
+	dev.off();
+  
+
+  
 #  readline("Press Enter for Next Plots: ");
 
   #plot_sub_clusters(sub_mat);
@@ -412,7 +552,8 @@ igt_doit <- function(igt_path, sub_path)
 	return(list("total_score" = score, "best_worst_score" = best_worst));
 }
 
-plot_sub_clusters(sub_mat)
+
+plot_sub_clusters <- function(sub_mat)
 {
   sub_dis <- dist(sub_mat);
   hd <- hclust(sub_dis, method = "ward");
