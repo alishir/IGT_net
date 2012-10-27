@@ -8,8 +8,8 @@ add_new_sub <- function(sub_dir)
 	sub_contact = readline("subject contact: ");
 	sub_bas_bis = readline("subject bas/bis answers: ");
 	sub_bas_bis_score = calc_bas_bis_score(sub_bas_bis);
-  sub_pnas = readline("subject PNAS: ");
-  sub_pnas_score = calc_pnas_score(sub_pnas);
+	sub_pnas = readline("subject PNAS: ");
+	sub_pnas_score = calc_pnas_score(sub_pnas);
 	file_name = paste(sub_id, "sub", sep=".");
 	save_path = paste(sub_dir, file_name, sep="/");
 	save(sub_id, sub_age, sub_sex, sub_contact, sub_bas_bis, sub_bas_bis_score, file=save_path);
@@ -18,7 +18,7 @@ add_new_sub <- function(sub_dir)
 
 calc_pnas_score <- function(sub_pnas)
 {
-  if (nchar(sub_pnas != 20))
+  if (nchar(sub_pnas) != 20)
   {
     cat("Invalid PANAS");
     return(list("pnas_neg_score" = -10, "pnas_pos_score" = -10));
@@ -87,28 +87,28 @@ calc_bas_bis_score <- function(sub_bas_bis)
 
 load_subjects <- function(sub_dir)
 {
-  sub_list = list.files(sub_dir, pattern = "*.sub$");
-  sub_size = length(sub_list);
-  sub_mat = matrix(data = NA, nrow = sub_size, ncol = 8);
-  sub_ids = lapply(sub_list, function(e) {substr(e, 1, nchar(e) - 4);});
-  rownames(sub_mat) <- as.vector(sub_ids);
-  colnames(sub_mat) <- c("sex", "bas", "bas_rr", "bas_fs", "bas_d", "bis", "pnas_p", "pnas_n");
-  sex_map = list("M" = 0, "F" = 1);
-  for (i in sub_list)
-  {
-    print(i);
-    load(paste(sub_dir, i, sep="/"));
-    id = substr(i, 1, nchar(i) - 4);
-    sub_mat[id, "sex"] = as.numeric(sex_map[sub_sex]);
-    sub_mat[id, "bas"] = as.numeric(sub_bas_bis_score["bas_score_norm"]);
-    sub_mat[id, "bas_rr"] = (as.numeric(sub_bas_bis_score["bas_rr_score"]) - 5) / (20 - 5);
-    sub_mat[id, "bas_fs"] = (as.numeric(sub_bas_bis_score["bas_fs_score"]) - 4) / (16 - 4);
-    sub_mat[id, "bas_d"] = (as.numeric(sub_bas_bis_score["bas_d_score"]) - 4) / (16 - 4);
-    sub_mat[id, "bis"] = as.numeric(sub_bas_bis_score["bis_score_norm"]);
-    sub_mat[id, "pnas_p"] = (as.numeric(sub_pnas_score["pnas_pos_score"]) - 10) / (50 - 10);
-    sub_mat[id, "pnas_n"] = (as.numeric(sub_pnas_score["pnas_neg_score"]) - 10) / (50 - 10);
-  }
-  return(sub_mat);
+	sub_list = list.files(sub_dir, pattern = "*.sub$");
+	sub_size = length(sub_list);
+	sub_mat = matrix(data = NA, nrow = sub_size, ncol = 8);
+	sub_ids = lapply(sub_list, function(e) {substr(e, 1, nchar(e) - 4);});
+	rownames(sub_mat) <- as.vector(sub_ids);
+	colnames(sub_mat) <- c("sex", "bas", "bas_rr", "bas_fs", "bas_d", "bis", "pnas_p", "pnas_n");
+	sex_map = list("M" = 0, "F" = 1);
+	for (i in sub_list)
+	{
+		#    print(i);
+		load(paste(sub_dir, i, sep="/"));
+		id = substr(i, 1, nchar(i) - 4);
+		sub_mat[id, "sex"] = as.numeric(sex_map[sub_sex]);
+		sub_mat[id, "bas"] = as.numeric(sub_bas_bis_score["bas_score_norm"]);
+		sub_mat[id, "bas_rr"] = (as.numeric(sub_bas_bis_score["bas_rr_score"]) - 5) / (20 - 5);
+		sub_mat[id, "bas_fs"] = (as.numeric(sub_bas_bis_score["bas_fs_score"]) - 4) / (16 - 4);
+		sub_mat[id, "bas_d"] = (as.numeric(sub_bas_bis_score["bas_d_score"]) - 4) / (16 - 4);
+		sub_mat[id, "bis"] = as.numeric(sub_bas_bis_score["bis_score_norm"]);
+		sub_mat[id, "pnas_p"] = (as.numeric(sub_pnas_score["pnas_pos_score"]) - 10) / (50 - 10);
+		sub_mat[id, "pnas_n"] = (as.numeric(sub_pnas_score["pnas_neg_score"]) - 10) / (50 - 10);
+	}
+	return(sub_mat);
 }
 
 

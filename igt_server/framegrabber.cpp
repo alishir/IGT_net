@@ -46,7 +46,7 @@ void FrameGrabber::run()
         timer = new QTimer(this);
         connect(this->timer, SIGNAL(timeout()), this, SLOT(grab()));
     }
-    timer->start(110);
+    timer->start(140);
     exec();
 }
 
@@ -62,7 +62,16 @@ void FrameGrabber::grab()
     this->frameMutex->lock();
     if (!(*(this->dataReady)))
     {
-        this->frame = cvQueryFrame(this->capture);
+        try
+        {
+            this->frame = cvQueryFrame(this->capture);
+        }
+        catch (cv::Exception &e)
+        {
+            const char* err_msg = e.what();
+            qDebug() << "QueryFrame Exception caught: " << err_msg;
+        }
+
         if (this->frame == 0)
         {
             qDebug() << "some error in grabbing image";

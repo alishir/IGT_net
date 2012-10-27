@@ -31,7 +31,17 @@ add_new_info_to_subjects <- function(sub_dir)
       if (nchar(get("sub_pnas", envir = zz)) == 20)
       {
         cat(sprintf("Calculating PNAS score ... subid: %s\n", get("sub_id", envir = zz)));
-        assign("sub_pnas_score", calc_pnas_score(get("sub_pnas", envir = zz)), envir = zz);  
+        assign("sub_pnas_score", calc_pnas_score(get("sub_pnas", envir = zz)), envir = zz);
+      }
+    }
+    else
+    {
+      neg_score = get("sub_pnas_score", envir = zz);
+      if (neg_score$pnas_neg_score == -10)
+      {
+        cat(sprintf("Neg Score: %d\n", neg_score$pnas_neg_score));
+        cat(sprintf("Calculating PNAS score ... subid: %s\n", get("sub_id", envir = zz)));
+        assign("sub_pnas_score", calc_pnas_score(get("sub_pnas", envir = zz)), envir = zz);
       }
     }
 
