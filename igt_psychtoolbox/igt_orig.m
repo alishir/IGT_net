@@ -14,49 +14,46 @@ function igt_orig(contact, sid, save_path)
 	wait_for_start(wPtr);
 	[pid, time_base] = start_eye_tracker(sid, save_path);
 	itr = 1;
+	% shuffle decks
+	shuffle_decks = randperm(4);
 	while itr < max_itr			% iteration of card selection by subject
 		is_deck_selected = 0;
 	%	show_rewards_bar(wPtr, acc_reward, acc_punish);
-		show_decks(wPtr, decks);
+		show_decks(wPtr, decks, shuffle_decks);
 		[selected_deck, resp_time] = get_response();
+		% convert user selection to shuffle decks
+		selected_deck = shuffle_decks(selected_deck - 96) + 96;
+		ind = selected_deck - 96;
+
 		current_reward = 0;
 		current_punish = 0;
 		if selected_deck(escape_key)
 			break;
 		end
 		if KbName(selected_deck) == 'a' || KbName(selected_deck) == 'A' || KbName(selected_deck) == '1'
-			if (decks.index(1,1) <= 40)
-				current_reward = decks.reward(1,decks.index(1,1));
-				current_punish = decks.punish(1,decks.index(1,1));
-				decks.index(1,1) = decks.index(1,1) + 1;
+			if (decks.index(1,ind) <= 40)
 				is_deck_selected = 1;
 			end
 		end
 		if KbName(selected_deck) == 'b' || KbName(selected_deck) == 'B' || KbName(selected_deck) == '2'
-			if (decks.index(1,2) <= 40)
-				current_reward = decks.reward(2,decks.index(1,2));
-				current_punish = decks.punish(2,decks.index(1,2));
-				decks.index(1,2) = decks.index(1,2) + 1;
+			if (decks.index(1,ind) <= 40)
 				is_deck_selected = 1;
 			end
 		end
 		if KbName(selected_deck) == 'c' || KbName(selected_deck) == 'C' || KbName(selected_deck) == '3'
-			if (decks.index(1,3) <= 40)
-				current_reward = decks.reward(3,decks.index(1,3));
-				current_punish = decks.punish(3,decks.index(1,3));
-				decks.index(1,3) = decks.index(1,3) + 1;
+			if (decks.index(1,ind) <= 40)
 				is_deck_selected = 1;
 			end
 		end
 		if KbName(selected_deck) == 'd' || KbName(selected_deck) == 'D' || KbName(selected_deck) == '4'
-			if (decks.index(1,4) <= 40)
-				current_reward = decks.reward(4,decks.index(1,4));
-				current_punish = decks.punish(4,decks.index(1,4));
-				decks.index(1,4) = decks.index(1,4) + 1;
+			if (decks.index(1,ind) <= 40)
 				is_deck_selected = 1;
 			end
 		end
 		if is_deck_selected
+			current_reward = decks.reward(ind ,decks.index(1, ind));
+			current_punish = decks.punish(ind ,decks.index(1, ind));
+			decks.index(1, ind) = decks.index(1, ind) + 1;
 			resp_times(itr,:) = resp_time;
 			game_seq(:,itr) = [KbName(selected_deck); current_reward; current_punish];
 			itr = itr + 1;
@@ -153,7 +150,7 @@ function quit(old_pref)
 	Screen('Preference', 'verbosity', old_pref);
 end
 
-function show_decks(wPtr, decks)
+function show_decks(wPtr, decks, shuffle_decks)
 	screen_size = Screen('Resolution', 0);
 	w_space = screen_size.width / 5;	% width space
 	h_space = screen_size.height / 3;	
@@ -174,16 +171,16 @@ function show_decks(wPtr, decks)
 	textureC = Screen('MakeTexture', wPtr, double(imgC));
 	textureD = Screen('MakeTexture', wPtr, double(imgD));
 
-	if (decks.index(1,1) > 40)
+	if (decks.index(1,shuffle_decks(1)) > 40)
 		imgA = imread('./images/blank.jpeg', 'JPG');
 	end
-	if (decks.index(1,2) > 40)
+	if (decks.index(1,shuffle_decks(2)) > 40)
 		imgB = imread('./images/blank.jpeg', 'JPG');
 	end
-	if (decks.index(1,3) > 40)
+	if (decks.index(1,shuffle_decks(3)) > 40)
 		imgC = imread('./images/blank.jpeg', 'JPG');
 	end
-	if (decks.index(1,4) > 40)
+	if (decks.index(1,shuffle_decks(4)) > 40)
 		imgD = imread('./images/blank.jpeg', 'JPG');
 	end
 	
