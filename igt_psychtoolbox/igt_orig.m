@@ -10,42 +10,43 @@ function igt_orig(contact, sid, save_path)
 	max_itr = 102;
 	game_seq = zeros(3,max_itr);	% sequence of card selection
 	resp_times = zeros(max_itr,6);
-	show_decks(wPtr, decks);
+	% shuffle decks
+	shuffle_decks = randperm(4);
+	show_decks(wPtr, decks, shuffle_decks);
 	wait_for_start(wPtr);
 	[pid, time_base] = start_eye_tracker(sid, save_path);
 	itr = 1;
-	% shuffle decks
-	shuffle_decks = randperm(4);
 	while itr < max_itr			% iteration of card selection by subject
 		is_deck_selected = 0;
 	%	show_rewards_bar(wPtr, acc_reward, acc_punish);
 		show_decks(wPtr, decks, shuffle_decks);
 		[selected_deck, resp_time] = get_response();
-		% convert user selection to shuffle decks
-		selected_deck = shuffle_decks(selected_deck - 96) + 96;
-		ind = selected_deck - 96;
 
 		current_reward = 0;
 		current_punish = 0;
 		if selected_deck(escape_key)
 			break;
 		end
-		if KbName(selected_deck) == 'a' || KbName(selected_deck) == 'A' || KbName(selected_deck) == '1'
+		% convert user selection to shuffle decks
+		orig_sel = KbName(selected_deck);
+		selected_deck = shuffle_decks(KbName(selected_deck) - 96) + 96;
+		ind = selected_deck - 96;
+		if selected_deck == 'a' || selected_deck == 'A' || selected_deck == '1'
 			if (decks.index(1,ind) <= 40)
 				is_deck_selected = 1;
 			end
 		end
-		if KbName(selected_deck) == 'b' || KbName(selected_deck) == 'B' || KbName(selected_deck) == '2'
+		if selected_deck == 'b' || selected_deck == 'B' || selected_deck == '2'
 			if (decks.index(1,ind) <= 40)
 				is_deck_selected = 1;
 			end
 		end
-		if KbName(selected_deck) == 'c' || KbName(selected_deck) == 'C' || KbName(selected_deck) == '3'
+		if selected_deck == 'c' || selected_deck == 'C' || selected_deck == '3'
 			if (decks.index(1,ind) <= 40)
 				is_deck_selected = 1;
 			end
 		end
-		if KbName(selected_deck) == 'd' || KbName(selected_deck) == 'D' || KbName(selected_deck) == '4'
+		if selected_deck == 'd' || selected_deck == 'D' || selected_deck == '4'
 			if (decks.index(1,ind) <= 40)
 				is_deck_selected = 1;
 			end
@@ -55,9 +56,9 @@ function igt_orig(contact, sid, save_path)
 			current_punish = decks.punish(ind ,decks.index(1, ind));
 			decks.index(1, ind) = decks.index(1, ind) + 1;
 			resp_times(itr,:) = resp_time;
-			game_seq(:,itr) = [KbName(selected_deck); current_reward; current_punish];
+			game_seq(:,itr) = [selected_deck; current_reward; current_punish];
 			itr = itr + 1;
-			show_msg(wPtr, current_reward, current_punish, KbName(selected_deck));
+			show_msg(wPtr, current_reward, current_punish, orig_sel);
 			acc_reward = acc_reward + current_reward;
 			acc_punish = acc_punish + current_punish;
 		end
@@ -268,7 +269,7 @@ function [selected_deck, resp_time] = get_response(wPtr)
 	while KbCheck; end
 end
 
-function mark_selected_deck(wPtr, selected_deck)
+function mark_selected_deck(wPtr, selected_deck, shuffle_decks)
 	screen_size = Screen('Resolution', 0);
 	w_space = screen_size.width / 5;	% width space
 	h_space = screen_size.height / 3;	
@@ -292,6 +293,7 @@ function mark_selected_deck(wPtr, selected_deck)
 
 	deck_D = deck_C + [pos_x + card_width, 0, pos_x + card_width, 0];
 	deck_D_shadow_3 = deck_D + 3 * shadow_offset;
+
 	if (selected_deck == 'a' || selected_deck == 'A')
 		img = imread('./images/a_sel.jpeg', 'JPG');
 		deck_shadow = deck_A_shadow_3;
