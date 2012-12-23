@@ -2,6 +2,7 @@ library('foreign');
 library('plotrix');
 library('pvclust');
 library('calibrate');
+library('dtw');
 load_exec_data <- function(igt_result_dir)
 {
 	if (file.exists(paste(igt_result_dir, "all.dat", sep = "/")))
@@ -28,20 +29,21 @@ load_exec_data <- function(igt_result_dir)
 	return(sub_deck_selection);
 }
 
-calc_20block_score_sub <- function(sub_trial)
+calc_20block_score_sub <- function(sub_trial, num_of_block)
 {
         # sub_trial is subject triala, 100 trial of igt game
-        block_score = matrix(data = NA, nrow = 1, ncol = 5);
-        for (i in c(1,2,3,4,5))
+        block_score = matrix(data = NA, nrow = 1, ncol = num_of_block);
+		bs = floor(100 / num_of_block);
+        for (i in seq(num_of_block))
         {
-                block_trial = sub_trial[(i * 18 - 17):(i * 18)];
+                block_trial = sub_trial[((i - 1) * bs + 1):(i * bs)];
                 block_score[1, i] = adv_disadv_score(block_trial);
         }
         return(block_score);
 }
 
 
-calc_20block_score <- function(sub_data, groups)
+calc_block_score <- function(sub_data, groups, num_of_block)
 {
 	num_sub = dim(sub_data)[1];
 	ret = list();
@@ -52,11 +54,9 @@ calc_20block_score <- function(sub_data, groups)
 	pen_group = groups_row_names[which(groups == 'pen')];
 	web_group = groups_row_names[which(groups == 'web')];
 
-
-
-	com_result = matrix(data = NA, nrow = length(com_group), ncol = 5);
-	web_result = matrix(data = NA, nrow = length(web_group), ncol = 5);
-	pen_result = matrix(data = NA, nrow = length(pen_group), ncol = 5);
+	com_result = matrix(data = NA, nrow = length(com_group), ncol = num_of_block);
+	web_result = matrix(data = NA, nrow = length(web_group), ncol = num_of_block);
+	pen_result = matrix(data = NA, nrow = length(pen_group), ncol = num_of_block);
 
 	rownames(com_result) <- as.vector(com_group);
 	rownames(web_result) <- as.vector(web_group);
@@ -66,21 +66,21 @@ calc_20block_score <- function(sub_data, groups)
 	{
 		if (s %in% rownames(sub_data))
 		{
-			com_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ]);
+			com_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block);
 		}
 	}
 	for (s in web_group)
 	{
 		if (s %in% rownames(sub_data))
 		{
-			web_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ]);
+			web_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block);
 		}
 	}
 	for (s in pen_group)
 	{
 		if (s %in% rownames(sub_data))
 		{
-			pen_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ]);
+			pen_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block);
 		}
 	}
 
@@ -153,7 +153,8 @@ plot_20block_score <- function(score)
 	#   legend("bottomright",  c("pen", "com"), cex=0.8, col = c(plot_col[1], plot_col[3]), pch=21, lty=1);
 }
 
-get_best_worst_20block_score <- function(score)
+# clus_cols: columns that used in clustering
+get_best_worst_block_score <- function(score, nb, clus_cols)
 {
 	x <- seq(1, 5);
 	plot_col = c("red", "green", "blue", "white");
@@ -166,9 +167,9 @@ get_best_worst_20block_score <- function(score)
 	com_sd = apply(score$com, 2, sd);
 
 	# extract two cluster in each group
-	pen_clus = within_group_cluster(score, "pen");
-	com_clus = within_group_cluster(score, "com");
-	web_clus = within_group_cluster(score, "web");
+	pen_clus = within_group_cluster(score, "pen", clus_cols);
+	com_clus = within_group_cluster(score, "com", clus_cols);
+	web_clus = within_group_cluster(score, "web", clus_cols);
 
 
 	pen_1st_clus_mean = colMeans(score$pen[pen_clus[[1]], ]);
@@ -177,7 +178,7 @@ get_best_worst_20block_score <- function(score)
 	pen_2st_sd = apply(score$pen[pen_clus[[2]], ], 2, sd);
 
 
-	if (pen_1st_clus_mean[5] + pen_1st_clus_mean[4] > pen_2st_clus_mean[5] + pen_2st_clus_mean[4])
+	if (pen_1st_clus_mean[nb] + pen_1st_clus_mean[nb - 1] > pen_2st_clus_mean[nb] + pen_2st_clus_mean[nb - 1])
 	{
 		pen_best_clus = score$pen[pen_clus[[1]], ];
 		pen_wors_clus = score$pen[pen_clus[[2]], ];
@@ -195,7 +196,7 @@ get_best_worst_20block_score <- function(score)
 	com_1st_sd = apply(score$com[com_clus[[1]], ], 2, sd);
 	com_2st_sd = apply(score$com[com_clus[[2]], ], 2, sd);
 
-	if (com_1st_clus_mean[5] + com_1st_clus_mean[4] > com_2st_clus_mean[5] + com_2st_clus_mean[4])
+	if (com_1st_clus_mean[nb] + com_1st_clus_mean[nb - 1] > com_2st_clus_mean[nb] + com_2st_clus_mean[nb - 1])
 	{
 		com_best_clus = score$com[com_clus[[1]], ];
 		com_wors_clus = score$com[com_clus[[2]], ];
@@ -211,7 +212,7 @@ get_best_worst_20block_score <- function(score)
 	web_2st_clus_mean = colMeans(score$web[web_clus[[2]], ]);
 	web_2st_sd = apply(score$web[web_clus[[2]], ], 2, sd);
 
-	if (web_1st_clus_mean[5] + web_1st_clus_mean[4] > web_2st_clus_mean[5] + web_2st_clus_mean[4])
+	if (web_1st_clus_mean[nb] + web_1st_clus_mean[nb - 1] > web_2st_clus_mean[nb] + web_2st_clus_mean[nb - 1])
 	{
 		web_best_clus = score$web[web_clus[[1]], ];
 		web_wors_clus = score$web[web_clus[[2]], ];
@@ -248,20 +249,31 @@ block_dist <- function(x, y)
 }
 
 
-within_group_cluster <- function(score, group_name)
+within_group_cluster <- function(score, group_name, col_range)
 {
 	# cluster subjects with in group and ask user to select groups
 	# score: a list of group scores e.g. score$com is the score of subjects in computer group
 	# group_name: string name of group in score variable e.g. "com"
-	library('proxy');
-	dis = dist(score[[group_name]], block_dist);
+#	library('proxy');
+#	library('dtw');
+	#dis = dist(score[[group_name]], block_dist);
+	if (exists("col_range"))
+	{
+		dis = dist(score[[group_name]][, col_range],  method = "DTW");
+	}
+	else
+	{
+		dis = dist(score[[group_name]],  method = "DTW");
+	}
 	hc = hclust(dis, method = "ward");
 	plot(hc);
 	clusters = cutree(hc, k = 2);
 	ind = rownames(as.matrix(clusters));
 	clu_1st = ind[clusters %in% 1];
 	clu_2nd = ind[clusters %in% 2];
-	detach('package:proxy');
+#	detach('package:dtw');
+#	detach('package:proxy');
+	print("In within_cluster:");
 	print(group_name);
 	print(clu_1st);
 	print(clu_2nd);
@@ -369,7 +381,7 @@ corr_learning_personality <- function(sub_path, best_worst)
 	print("End of Corr");
 }
 
-plot_bas_bis <- function(sub_path, best_worst)
+plot_bas_bis <- function(sub_path, best_worst, num_of_block)
 {
 	ratio = 2;
 	par(cex.axis = 3, cex.main = 3, cex.lab = 3);
@@ -422,12 +434,12 @@ plot_bas_bis <- function(sub_path, best_worst)
 	lm_com_worst = lm(com_worst_subs[, "bis"] ~ com_worst_subs[, "bas"]);
 	lm_pen_worst = lm(pen_worst_subs[, "bis"] ~ pen_worst_subs[, "bas"]);
 	lm_web_worst = lm(web_worst_subs[, "bis"] ~ web_worst_subs[, "bas"]);
-	abline(lm_com_best, col = 'red');
-	abline(lm_pen_best, col = 'orange');
-	abline(lm_web_best, col = 'yellow');
-	abline(lm_com_worst, col = 'blue');
-	abline(lm_pen_worst, col = 'green');
-	abline(lm_web_worst, col = 'lightgreen');
+	# abline(lm_com_best, col = 'red');
+	# abline(lm_pen_best, col = 'orange');
+	# abline(lm_web_best, col = 'yellow');
+	# abline(lm_com_worst, col = 'blue');
+	# abline(lm_pen_worst, col = 'green');
+	# abline(lm_web_worst, col = 'lightgreen');
 
 
 	plot(sub_mat[, "bas_rr"], sub_mat[, "bis"], col = sub_col, pch = 21, bg = sub_col, main = "Subjects BAS RR/BIS Dist.");
@@ -440,12 +452,12 @@ plot_bas_bis <- function(sub_path, best_worst)
 	lm_com_worst = lm(com_worst_subs[, "bis"] ~ com_worst_subs[, "bas_rr"]);
 	lm_pen_worst = lm(pen_worst_subs[, "bis"] ~ pen_worst_subs[, "bas_rr"]);
 	lm_web_worst = lm(web_worst_subs[, "bis"] ~ web_worst_subs[, "bas_rr"]);
-	abline(lm_com_best, col = 'red');
-	abline(lm_pen_best, col = 'orange');
-	abline(lm_web_best, col = 'yellow');
-	abline(lm_com_worst, col = 'blue');
-	abline(lm_pen_worst, col = 'green');
-	abline(lm_web_worst, col = 'lightgreen');
+	# abline(lm_com_best, col = 'red');
+	# abline(lm_pen_best, col = 'orange');
+	# abline(lm_web_best, col = 'yellow');
+	# abline(lm_com_worst, col = 'blue');
+	# abline(lm_pen_worst, col = 'green');
+	# abline(lm_web_worst, col = 'lightgreen');
 
 
 	plot(sub_mat[, "bas_fs"], sub_mat[, "bis"], col = sub_col, pch = 21, bg = sub_col, main = "Subjects BAS FS/BIS Dist.");
@@ -458,12 +470,12 @@ plot_bas_bis <- function(sub_path, best_worst)
 	lm_com_worst = lm(com_worst_subs[, "bis"] ~ com_worst_subs[, "bas_fs"]);
 	lm_pen_worst = lm(pen_worst_subs[, "bis"] ~ pen_worst_subs[, "bas_fs"]);
 	lm_web_worst = lm(web_worst_subs[, "bis"] ~ web_worst_subs[, "bas_fs"]);
-	abline(lm_com_best, col = 'red');
-	abline(lm_pen_best, col = 'orange');
-	abline(lm_web_best, col = 'yellow');
-	abline(lm_com_worst, col = 'blue');
-	abline(lm_pen_worst, col = 'green');
-	abline(lm_web_worst, col = 'lightgreen');
+	# abline(lm_com_best, col = 'red');
+	# abline(lm_pen_best, col = 'orange');
+	# abline(lm_web_best, col = 'yellow');
+	# abline(lm_com_worst, col = 'blue');
+	# abline(lm_pen_worst, col = 'green');
+	# abline(lm_web_worst, col = 'lightgreen');
 
 	plot(sub_mat[, "bas_d"], sub_mat[, "bis"], col = sub_col, pch = 21, bg = sub_col, main = "Subjects BAS D/BIS Dist.");
 	legend('bottomright', c('COM Best', 'PEN Best', 'WEB Best', 'COM Worst', 'PEN Worst', 'WEB Worst'), 
@@ -475,12 +487,12 @@ plot_bas_bis <- function(sub_path, best_worst)
 	lm_com_worst = lm(com_worst_subs[, "bis"] ~ com_worst_subs[, "bas_d"]);
 	lm_pen_worst = lm(pen_worst_subs[, "bis"] ~ pen_worst_subs[, "bas_d"]);
 	lm_web_worst = lm(web_worst_subs[, "bis"] ~ web_worst_subs[, "bas_d"]);
-	abline(lm_com_best, col = 'red');
-	abline(lm_pen_best, col = 'orange');
-	abline(lm_web_best, col = 'yellow');
-	abline(lm_com_worst, col = 'blue');
-	abline(lm_pen_worst, col = 'green');
-	abline(lm_web_worst, col = 'lightgreen');
+	# abline(lm_com_best, col = 'red');
+	# abline(lm_pen_best, col = 'orange');
+	# abline(lm_web_best, col = 'yellow');
+	# abline(lm_com_worst, col = 'blue');
+	# abline(lm_pen_worst, col = 'green');
+	# abline(lm_web_worst, col = 'lightgreen');
 
 
 	#	x11();
@@ -492,20 +504,20 @@ plot_bas_bis <- function(sub_path, best_worst)
 	lm_com_worst = lm(com_worst_subs[, "pnas_p"] ~ com_worst_subs[, "pnas_n"]);
 	lm_pen_worst = lm(pen_worst_subs[, "pnas_p"] ~ pen_worst_subs[, "pnas_n"]);
 	lm_web_worst = lm(web_worst_subs[, "pnas_p"] ~ web_worst_subs[, "pnas_n"]);
-	abline(lm_com_best, col = 'red');
-	abline(lm_pen_best, col = 'orange');
-	abline(lm_web_best, col = 'yellow');
-	abline(lm_com_worst, col = 'blue');
-	abline(lm_pen_worst, col = 'green');
-	abline(lm_web_worst, col = 'lightgreen');
+	# abline(lm_com_best, col = 'red');
+	# abline(lm_pen_best, col = 'orange');
+	# abline(lm_web_best, col = 'yellow');
+	# abline(lm_com_worst, col = 'blue');
+	# abline(lm_pen_worst, col = 'green');
+	# abline(lm_web_worst, col = 'lightgreen');
 	#legend(-1, -1, c('COM Best', 'PEN Best', 'COM Worst', 'PEN Worst'), fill = c('red', 'orange', 'blue', 'green'), cex = 2);
 	#  x11();
 	#  scatterplot3d(sub_mat[, "bas"], sub_mat[, "bis"], sub_mat[, "pnas_n"]);
 
 
-	boxplot(best_worst$com_best, ylim = c(-20, 20), at = 1:5, col = 'orange', boxwex = 0.15, main = "Best Clusters");
-	boxplot(best_worst$pen_best, at = 1:5 + 0.2, col = 'yellow', boxwex = 0.15, add = TRUE);
-	boxplot(best_worst$web_best, at = 1:5 - 0.2, col = 'red', boxwex = 0.15, add = TRUE);
+	boxplot(best_worst$com_best, ylim = c(-20, 20), at = 1:num_of_block, col = 'orange', boxwex = 0.15, main = "Best Clusters");
+	boxplot(best_worst$pen_best, at = 1:num_of_block + 0.2, col = 'yellow', boxwex = 0.15, add = TRUE);
+	boxplot(best_worst$web_best, at = 1:num_of_block - 0.2, col = 'red', boxwex = 0.15, add = TRUE);
 	legend('bottomright', c(sprintf("COM #%d:{%s}", nrow(best_worst$com_best), 
 									paste(as.character(rownames(best_worst$com_best)), collapse = ', ')), 
 				sprintf("PEN #%d:{%s}", nrow(best_worst$pen_best), 
@@ -525,9 +537,9 @@ plot_bas_bis <- function(sub_path, best_worst)
 	barplot(cbind(com_best_sex_dis, pen_best_sex_dis, web_best_sex_dis), 
 			names.arg = c("COM", "PEN", "WEB"), col = c('purple', 'pink'));  # pink for female :D
 
-	boxplot(best_worst$com_worst, ylim = c(-20, 20), at = 1:5, col = 'orange', boxwex = 0.15, main = "Worst Clusters");
-	boxplot(best_worst$pen_worst, at = 1:5 + 0.2, col = 'yellow', boxwex = 0.15, add = TRUE);
-	boxplot(best_worst$web_worst, at = 1:5 - 0.2, col = 'red', boxwex = 0.15, add = TRUE);
+	boxplot(best_worst$com_worst, ylim = c(-20, 20), at = 1:num_of_block, col = 'orange', boxwex = 0.15, main = "Worst Clusters");
+	boxplot(best_worst$pen_worst, at = 1:num_of_block + 0.2, col = 'yellow', boxwex = 0.15, add = TRUE);
+	boxplot(best_worst$web_worst, at = 1:num_of_block - 0.2, col = 'red', boxwex = 0.15, add = TRUE);
 	legend('bottomright', c(sprintf("COM #%d:{%s}", nrow(best_worst$com_worst), 
 									paste(as.character(rownames(best_worst$com_worst)), collapse = ', ')), 
 				sprintf("PEN #%d:{%s}", nrow(best_worst$pen_worst), 
@@ -710,57 +722,153 @@ plot_ts <- function(igt_data, best_worst)
 }
 
 
-igt_doit <- function(igt_path, sub_path)
+total_clustering <- function(igt_data, score, num_of_clust = 3, col_range)
+{
+	all_data = rbind(score$web, score$pen, score$com);
+	dis = dist(all_data[, col_range], method = "DTW");
+	hc = hclust(dis, method = "ward");
+	clusts = cutree(hc, k = num_of_clust);
+	ind = rownames(as.matrix(clusts));
+	
+	ret_clusts = list();
+	for (i in 1:num_of_clust)
+	{
+		key = sprintf("clust_%d", i);
+		ret_clusts[[key]] = ind[clusts %in% i];			# cluster indexes
+		print(length(ret_clusts[[key]]));
+	}
+
+	ratio = 2;
+	png('/tmp/total_clusts.png', width = 1360 * ratio, height = 768 * ratio);
+	attach(mtcars);
+	# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
+	p_ncol = ceiling(num_of_clust / 2);
+	layout(matrix(seq(1, p_ncol * 2), nrow = 2, ncol = p_ncol, byrow = FALSE));
+
+	par(cex.axis = 3, cex.main = 3, cex.lab = 3, mar = c(4,4,4,4));
+	ts_len = 101;
+	for (key in names(ret_clusts))
+	{
+		print(key);
+
+		g_nrow = length(ret_clusts[[key]]);
+		group_ts = matrix(nrow = g_nrow, ncol = ts_len);
+		rownames(group_ts) = c(ret_clusts[[key]]);
+		for (sub_name in c(ret_clusts[[key]]))
+		{
+			group_ts[sub_name, ] = calc_good_bad(igt_data[sub_name, ]);
+		}
+		matplot(t(group_ts), type = 'o', pch = 1:g_nrow, col = 1:g_nrow, bg = 1:g_nrow, main = key, lwd = 3);
+		legend('topleft', rownames(group_ts), pch = 1:g_nrow, fill = 1:g_nrow, cex = 3, ncol = 3);
+	}
+	dev.off();
+}
+
+
+plot_horstmann_result <- function(horstmann_result, sub_exp_map)
+{
+	num_of_blocks = dim(horstmann_result)[2];
+	w_outcome_median = matrix(apply(horstmann_result[,,'outcome'], 2, median), nrow = 1);
+	rownames(w_outcome_median) = c('outcome');
+	w_gain_median = matrix(apply(horstmann_result[,,'gain'], 2, median), nrow = 1);
+	rownames(w_gain_median) = c('gain');
+	w_loss_median = matrix(apply(horstmann_result[,,'loss'], 2, median), nrow = 1);
+	rownames(w_loss_median) = c('loss');
+
+	total_data = rbind(w_outcome_median, w_gain_median, w_loss_median);
+
+	ratio = 2;
+	png('/tmp/horstmann_result.png', width = 1360 * ratio, height = 768 * ratio);
+	attach(mtcars);
+	# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
+	par(cex = 3, cex.axis = 3, cex.main = 3, cex.lab = 3, mar = c(5,5,5,5));
+	layout(matrix(seq(1, 4), nrow = 2, ncol = 2, byrow = FALSE));
+
+	# plot total
+	matplot(t(total_data), type = 'o', pch = 1:3, col = 1:3, bg = 1:3, lwd = 3, main = "Total");
+	legend('bottomright', rownames(total_data), pch = 1:3, fill = 1:3, cex = 3);
+
+	# plot by exp
+	groups = c('pen', 'com', 'web');
+	for (g in groups)
+	{
+		sub_in_g = which(sub_exp_map == g);
+		curr_data = horstmann_result[sub_in_g,,];
+		cd_outcome_median = matrix(apply(curr_data[,,'outcome'], 2, median), nrow = 1);
+		rownames(cd_outcome_median) = c('outcome');
+		cd_gain_median = matrix(apply(curr_data[,,'gain'], 2, median), nrow = 1);
+		rownames(cd_gain_median) = c('gain');
+		cd_loss_median = matrix(apply(curr_data[,,'loss'], 2, median), nrow = 1);
+		rownames(cd_loss_median) = c('loss');
+		cd_bind = rbind(cd_outcome_median, cd_gain_median, cd_loss_median);
+		matplot(t(cd_bind), type = 'o', pch = 1:3, col = 1:3, bg = 1:3, lwd = 3, main = g);
+		legend('bottomright', rownames(cd_bind), pch = 1:3, fill = 1:3, cex = 3);
+	}
+	dev.off();
+}
+
+
+horstmann_analysis <- function(raw_data, sub_exp_map, num_of_blocks)
+{
+	num_of_subs = nrow(raw_data);
+	# define weight array w_i and selection portion b_i
+	num_of_weights = 3;
+	num_of_decks = 4;
+	block_weight = array(0, dim = c(num_of_subs, num_of_blocks, num_of_weights),
+						 dimnames = list(rownames(raw_data), NULL, c('outcome', 'gain', 'loss')));
+
+	choice_portion = matrix(0, nrow = 4, ncol = 1);
+	rownames(choice_portion) = c('a', 'b', 'c', 'd');
+
+	bs = floor(100 / num_of_blocks);
+
+	payoff_scheme = matrix(0, nrow = 4, ncol = 3);
+	colnames(payoff_scheme) = c('outcome', 'gain', 'loss');
+	rownames(payoff_scheme) = c('a', 'b', 'c', 'd');
+	payoff_scheme[,1] = c(-0.86, -0.86, 0.86, 0.86);
+	payoff_scheme[,2] = c(-0.86, 0.86, -0.86, 0.86);
+	payoff_scheme[,3] = c(-1.47, 0.34, 0.79, 0.34);
+
+	for (i in rownames(raw_data))
+	{
+		for (b in seq(num_of_blocks))
+		{
+			block_trial = raw_data[i,][((b - 1) * bs + 1):(b * bs)];
+			choice_portion['a',] = sum(block_trial == 97) / bs;
+			choice_portion['b',] = sum(block_trial == 98) / bs;
+			choice_portion['c',] = sum(block_trial == 99) / bs;
+			choice_portion['d',] = sum(block_trial == 100) / bs;
+			
+			lm_result = lm(choice_portion ~ -1 + payoff_scheme);
+			block_weight[i,b,] = lm_result$coefficients;
+		}
+	}
+	return(block_weight);
+}
+
+
+igt_doit <- function(igt_path, sub_path = '')
 {
 	dat = load_exec_data(igt_path);
 	group_fname = "sub_exp_map";
 	sub_exp_map = read.csv(paste(igt_path, group_fname, sep="/"));
 
-	score = calc_20block_score(dat, sub_exp_map);
+	num_of_block = 10;
+	score = calc_block_score(dat, sub_exp_map, num_of_block);
 
 
-	best_worst = get_best_worst_20block_score(score);
+	best_worst = get_best_worst_block_score(score, num_of_block, seq(6, num_of_block));
 
-	if (exists("sub_path"))
+	# there is some problem with "exists" function
+	if (nchar(sub_path) > 0)
 	{
-		plot_bas_bis(sub_path, best_worst);
+		plot_bas_bis(sub_path, best_worst, num_of_block);
 		corr_learning_personality(sub_path, best_worst);
 	}
 
-	plot_ts(dat, best_worst);
+#	plot_ts(dat, best_worst);
 
+	total_clustering(dat, score, num_of_clust = 6, seq(3,10));
 
 	return(list("total_score" = score, "best_worst_score" = best_worst));
-}
-
-
-plot_sub_clusters <- function(sub_mat)
-{
-  sub_dis <- dist(sub_mat);
-  hd <- hclust(sub_dis, method = "ward");
-  clus_plot = plot(hd);
-  # load previous group assignment
-#  group_fname = "sub_exp_map";
-#  sub_exp_map = read.csv(paste(sub_dir, group_fname, sep="/"));
-  
-  # colorify dendogram nodes
-  local({
-    exp_col_map = list("com" = "red", "pen" = "green", "web" = "blue");
-    colLab <<- function(n) {
-      if(is.leaf(n)) {
-        a <- attributes(n);
-        sub_name = a$label;
-        if (sub_name %in% rownames(sub_exp_map))
-        {
-          color = exp_col_map[[sub_exp_map[sub_name, ]]];
-          attr(n, "nodePar") <- c(a$nodePar, list(lab.col = color));
-        }
-      }
-      return(n);
-    }
-  })
-  dhc = as.dendrogram(sub_cluster);
-  color_dhc <- dendrapply(dhc, colLab)
-  #	op = par(mfrow=2:1);
-  plot(color_dhc);
 }
