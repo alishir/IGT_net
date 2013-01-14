@@ -3,6 +3,7 @@ library('plotrix');
 library('pvclust');
 library('calibrate');
 library('dtw');
+source('./Friedman-Test-with-Post-Hoc.r');
 load_exec_data <- function(igt_result_dir)
 {
 	if (file.exists(paste(igt_result_dir, "all.dat", sep = "/")))
@@ -191,8 +192,10 @@ get_best_worst_block_score <- function(score, nb, clus_cols)
 
 
 
-	com_1st_clus_mean = colMeans(score$com[com_clus[[1]], ]);
-	com_2st_clus_mean = colMeans(score$com[com_clus[[2]], ]);
+#	com_1st_clus_mean = colMeans(score$com[com_clus[[1]], ]);
+	com_1st_clus_mean = apply(score$com[com_clus[[1]], ], 2, mean);
+#	com_2st_clus_mean = colMeans(score$com[com_clus[[2]], ]);
+	com_2st_clus_mean = apply(score$com[com_clus[[2]], ], 2, mean);
 	com_1st_sd = apply(score$com[com_clus[[1]], ], 2, sd);
 	com_2st_sd = apply(score$com[com_clus[[2]], ], 2, sd);
 
@@ -207,10 +210,11 @@ get_best_worst_block_score <- function(score, nb, clus_cols)
 		com_wors_clus = score$com[com_clus[[1]], ];
 	}
 
-	web_1st_clus_mean = colMeans(score$web[web_clus[[1]], ]);
+	web_1st_clus_mean = apply(score$web[web_clus[[1]], ], 2, mean);
+	web_2st_clus_mean = apply(matrix(score$web[web_clus[[2]], ], ncol = nb), 2, mean);
 	web_1st_sd = apply(score$web[web_clus[[1]], ], 2, sd);
-	web_2st_clus_mean = colMeans(score$web[web_clus[[2]], ]);
-	web_2st_sd = apply(score$web[web_clus[[2]], ], 2, sd);
+#	web_2st_sd = apply(score$web[web_clus[[2]], ], 2, sd);
+	web_2st_sd = apply(matrix(score$web[web_clus[[2]], ], ncol = nb), 2, sd);
 
 	if (web_1st_clus_mean[nb] + web_1st_clus_mean[nb - 1] > web_2st_clus_mean[nb] + web_2st_clus_mean[nb - 1])
 	{
@@ -280,36 +284,36 @@ within_group_cluster <- function(score, group_name, col_range)
 	return(list("first" = clu_1st, "second" = clu_2nd));
 }
 
-calc_good_bad <- function(trial_choise)
+calc_good_bad <- function(trial_choice)
 {
-  len = length(trial_choise);
-  good_bad = matrix(nrow = 1, ncol = len + 1);
-  good_bad[1, 1] = 0;
-  for (i in seq(1,len))
-  {
-    ch = trial_choise[i] - 96;  # deck A is 97, convert to matrix index
-    if (ch < 3)
+	len = length(trial_choice);
+	good_bad = matrix(nrow = 1, ncol = len + 1);
+	good_bad[1, 1] = 0;
+	for (i in seq(1,len))
 	{
-      good_bad[1, i + 1] = good_bad[1, i]  - 1;
+		ch = trial_choice[i] - 96;  # deck A is 97, convert to matrix index
+		if (ch < 3)		# deck A, B
+		{
+			good_bad[1, i + 1] = good_bad[1, i]  - 1;
+		}
+		else		# deck C, D
+		{
+			good_bad[1, i + 1] = good_bad[1, i]  + 1;
+		}
 	}
-    else
-	{
-      good_bad[1, i + 1] = good_bad[1, i]  + 1;
-	}
-  }
-  return(good_bad);
+	return(good_bad);
 }
 
-calc_acc_reward <- function(trial_choise)
+calc_acc_reward <- function(trial_choice)
 {
   rew_pun = read.octave('pen.dat');
-  len = length(trial_choise);
+  len = length(trial_choice);
   acc_rew = matrix(nrow = 1, ncol = len + 1);
   ind = matrix(c(1,1,1,1), nrow = 4, ncol = 1);
   acc_rew[1,1] = 2000;  # initial deposit!
   for (i in seq(1,len))
   {
-    ch = trial_choise[i] - 96;  # deck A is 97, convert to matrix index
+    ch = trial_choice[i] - 96;  # deck A is 97, convert to matrix index
     pin = ind[ch, 1];       # punishment index
 #    print(sprintf("i: %d, pin: %d, ch: %d", i, pin, ch));
     acc_rew[1, i + 1] = acc_rew[1, i] + rew_pun$reward[ch, i] - rew_pun$punish[ch, pin];
@@ -565,12 +569,6 @@ plot_bas_bis <- function(sub_path, best_worst, num_of_block)
 
 plot_ts <- function(igt_data, best_worst)
 {
-	com_best_subs = matrix(rownames(best_worst$com_best));
-	pen_best_subs = matrix(rownames(best_worst$pen_best));
-	web_best_subs = matrix(rownames(best_worst$web_best));
-	com_worst_subs = matrix(rownames(best_worst$com_worst));
-	pen_worst_subs = matrix(rownames(best_worst$pen_worst));
-	web_worst_subs = matrix(rownames(best_worst$web_worst));
 	### PLOT Time Series ####
 	ratio = 2;
 	png('/tmp/acc_reward.png', width = 1360 * ratio, height = 768 * ratio);
@@ -578,146 +576,57 @@ plot_ts <- function(igt_data, best_worst)
 	# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
 	layout(matrix(c(1, 2, 3, 4, 5, 6), nrow = 2, ncol = 3, byrow = FALSE));
 
-	# COM Best #
+	groups = c('pen', 'com', 'web');
+	sub_groups = c('best', 'worst');
 	ts_len = 101;   # trial length
-	com_best_ts = matrix(nrow = nrow(com_best_subs), ncol = ts_len);
-	rownames(com_best_ts) = c(com_best_subs);
-	for (sub_name in com_best_subs)
+	for (gr in groups)
 	{
-		print(sub_name);
-		com_best_ts[sub_name, ] = calc_acc_reward(igt_data[sub_name, ]);
+		for (sg in sub_groups)
+		{
+			key = paste(gr, sg, sep = '_'); # e.g. pen_worst
+			subs = matrix(rownames(best_worst[[key]]));
+			data_ts = matrix(nrow = nrow(subs), ncol = ts_len);
+			rownames(data_ts) = c(subs);
+			for (sub_name in subs)
+			{
+				data_ts[sub_name, ] = calc_acc_reward(igt_data[sub_name, ]);
+			}
+			matplot(t(data_ts), type = 'o', pch = 1:nrow(data_ts),
+					col = 1:nrow(data_ts), bg = 1:nrow(data_ts), main = key, lwd = 3, cex.axis = 3, cex.main = 3);
+			legend('topleft', rownames(data_ts), fill = 1:nrow(data_ts), cex = 3);
+		}
 	}
-	matplot(t(com_best_ts), type = 'o', pch=1:nrow(com_best_ts), 
-			col=1:nrow(com_best_ts), bg=1:nrow(com_best_ts), main = "COM BEST", lwd = 3, cex.axis = 3, cex.main = 3);
-	legend('topleft', rownames(com_best_ts), fill = 1:nrow(com_best_ts), cex = 3);
-
-	com_worst_ts = matrix(nrow = nrow(com_worst_subs), ncol = ts_len);
-	rownames(com_worst_ts) = c(com_worst_subs);
-	for (sub_name in com_worst_subs)
-	{
-		print(sub_name);
-		com_worst_ts[sub_name, ] = calc_acc_reward(igt_data[sub_name, ]);
-	}
-	matplot(t(com_worst_ts), type = 'o', pch=1:nrow(com_worst_ts), 
-			col=1:nrow(com_worst_ts), bg=1:nrow(com_worst_ts), main = "COM WORST", lwd = 3, cex.axis = 3, cex.main = 3);
-	legend('bottomleft', rownames(com_worst_ts), fill = 1:nrow(com_worst_ts), cex = 3);
-
-
-	pen_best_ts = matrix(nrow = nrow(pen_best_subs), ncol = ts_len);
-	rownames(pen_best_ts) = c(pen_best_subs);
-	for (sub_name in pen_best_subs)
-	{
-		print(sub_name);
-		pen_best_ts[sub_name, ] = calc_acc_reward(igt_data[sub_name, ]);
-	}
-	matplot(t(pen_best_ts), type = 'o', pch=1:nrow(pen_best_ts), 
-			col=1:nrow(pen_best_ts), bg=1:nrow(pen_best_ts), main = "PEN BEST", lwd = 3, cex.axis = 3, cex.main = 3);
-	legend('topleft', rownames(pen_best_ts), fill = 1:nrow(pen_best_ts), cex = 3);
-
-	pen_worst_ts = matrix(nrow = nrow(pen_worst_subs), ncol = ts_len);
-	rownames(pen_worst_ts) = c(pen_worst_subs);
-	for (sub_name in c(pen_worst_subs))
-	{
-		print(sub_name);
-		pen_worst_ts[sub_name, ] = calc_acc_reward(igt_data[sub_name, ]);
-	}
-	matplot(t(pen_worst_ts), type = 'o', pch=1:nrow(pen_worst_ts), 
-			col=1:nrow(pen_worst_ts), bg=1:nrow(pen_worst_ts), main = "PEN WORST", lwd = 3, cex.axis = 3, cex.main = 3);
-	legend('topleft', rownames(pen_worst_ts), fill = 1:nrow(pen_worst_ts), cex = 3);
-
-	web_best_ts = matrix(nrow = nrow(web_best_subs), ncol = ts_len);
-	rownames(web_best_ts) = c(web_best_subs);
-	for (sub_name in c(web_best_subs))
-	{
-		print(sub_name);
-		web_best_ts[sub_name, ] = calc_acc_reward(igt_data[sub_name, ]);
-	}
-	matplot(t(web_best_ts), type = 'o', pch=1:nrow(web_best_ts), 
-			col=1:nrow(web_best_ts), bg=1:nrow(web_best_ts), main = "WEB BEST", lwd = 3, cex.axis = 3, cex.main = 3);
-	legend('topleft', rownames(web_best_ts), fill = 1:nrow(web_best_ts), cex = 3);
-
-	web_worst_ts = matrix(nrow = nrow(web_worst_subs), ncol = ts_len);
-	rownames(web_worst_ts) = c(web_worst_subs);
-	for (sub_name in c(web_worst_subs))
-	{
-		print(sub_name);
-		web_worst_ts[sub_name, ] = calc_acc_reward(igt_data[sub_name, ]);
-	}
-	matplot(t(web_worst_ts), type = 'o', pch=1:nrow(web_worst_ts), 
-			col=1:nrow(web_worst_ts), bg=1:nrow(web_worst_ts), main = "WEB WORST", lwd = 3, cex.axis = 3, cex.main = 3);
-	legend('topleft', rownames(web_worst_ts), fill = 1:nrow(web_worst_ts), cex = 3);
 	dev.off();
 
 
 	### PLOT Good-BadTime Series ####
 	ratio = 2;
-	png('/tmp/good_bad.png', width = 1360 * ratio, height = 768 * ratio);
+	png('/tmp/good_bad_outcome.png', width = 1360 * ratio, height = 768 * ratio);
 	attach(mtcars);
 	# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
 	layout(matrix(c(1, 2, 3, 4, 5, 6), nrow = 2, ncol = 3, byrow = FALSE));
-
 	# COM Best #
 	ts_len = 101;   # trial length
 	par(cex.axis = 3, cex.main = 3, cex.lab = 3, mar = c(6,6,6,6));
-	com_best_gb_ts = matrix(nrow = nrow(com_best_subs), ncol = ts_len);
-	rownames(com_best_gb_ts) = c(com_best_subs);
-	for (sub_name in c(com_best_subs))
-	{
-		com_best_gb_ts[sub_name, ] = calc_good_bad(igt_data[sub_name, ]);
-	}
-	matplot(t(com_best_gb_ts), type = 'o', pch=1:nrow(com_best_gb_ts), 
-			col=1:nrow(com_best_gb_ts), bg=1:nrow(com_best_gb_ts), main = "COM BEST", lwd = 3, cex.axis = 3, cex.main = 3);
-	legend('topleft', rownames(com_best_gb_ts), pch=1:nrow(com_best_gb_ts), fill = 1:nrow(com_best_gb_ts), cex = 3);
 
-	com_worst_gb_ts = matrix(nrow = nrow(com_worst_subs), ncol = ts_len);
-	rownames(com_worst_gb_ts) = c(com_worst_subs);
-	for (sub_name in c(com_worst_subs))
-	{
-		com_worst_gb_ts[sub_name, ] = calc_good_bad(igt_data[sub_name, ]);
-	}
-	matplot(t(com_worst_gb_ts), type = 'o', pch=1:nrow(com_worst_gb_ts), 
-			col=1:nrow(com_worst_gb_ts), bg=1:nrow(com_worst_gb_ts), main = "COM WORST", lwd = 3, cex.axis = 3, cex.main = 3);
-	legend('bottomleft', rownames(com_worst_gb_ts), pch=1:nrow(com_worst_gb_ts), fill = 1:nrow(com_worst_gb_ts), cex = 3);
 
-	pen_best_gb_ts = matrix(nrow = nrow(pen_best_subs), ncol = ts_len);
-	rownames(pen_best_gb_ts) = c(pen_best_subs);
-	for (sub_name in c(pen_best_subs))
+	for (gr in groups)
 	{
-		pen_best_gb_ts[sub_name, ] = calc_good_bad(igt_data[sub_name, ]);
+		for (sg in sub_groups)
+		{
+			key = paste(gr, sg, sep = '_'); # e.g. pen_worst
+			subs = matrix(rownames(best_worst[[key]]));
+			data_ts = matrix(nrow = nrow(subs), ncol = ts_len);
+			rownames(data_ts) = c(subs);
+			for (sub_name in subs)
+			{
+				data_ts[sub_name, ] = calc_good_bad(igt_data[sub_name, ]);
+			}
+			matplot(t(data_ts), type = 'o', pch = 1:nrow(data_ts),
+					col = 1:nrow(data_ts), bg = 1:nrow(data_ts), main = key, lwd = 3, cex.axis = 3, cex.main = 3);
+			legend('topleft', rownames(data_ts), fill = 1:nrow(data_ts), cex = 3);
+		}
 	}
-	matplot(t(pen_best_gb_ts), type = 'o', pch=1:nrow(pen_best_gb_ts), 
-			col=1:nrow(pen_best_gb_ts), bg=1:nrow(pen_best_gb_ts), main = "PEN BEST", lwd = 3, cex.axis = 3, cex.main = 3);
-	legend('topleft', rownames(pen_best_gb_ts), pch=1:nrow(pen_best_gb_ts), fill = 1:nrow(pen_best_gb_ts), cex = 3);
-
-	pen_worst_gb_ts = matrix(nrow = nrow(pen_worst_subs), ncol = ts_len);
-	rownames(pen_worst_gb_ts) = c(pen_worst_subs);
-	for (sub_name in c(pen_worst_subs))
-	{
-		pen_worst_gb_ts[sub_name, ] = calc_good_bad(igt_data[sub_name, ]);
-	}
-	matplot(t(pen_worst_gb_ts), type = 'o', pch=1:nrow(pen_worst_gb_ts), 
-			col=1:nrow(pen_worst_gb_ts), bg=1:nrow(pen_worst_gb_ts), main = "PEN WORST", lwd = 3, cex.axis = 3, cex.main = 3);
-	legend('bottomleft', rownames(pen_worst_gb_ts), pch=1:nrow(pen_worst_gb_ts), fill = 1:nrow(pen_worst_gb_ts), cex = 3);
-
-	web_best_gb_ts = matrix(nrow = nrow(web_best_subs), ncol = ts_len);
-	rownames(web_best_gb_ts) = c(web_best_subs);
-	for (sub_name in c(web_best_subs))
-	{
-		web_best_gb_ts[sub_name, ] = calc_good_bad(igt_data[sub_name, ]);
-	}
-	matplot(t(web_best_gb_ts), type = 'o', pch=1:nrow(web_best_gb_ts), 
-			col=1:nrow(web_best_gb_ts), bg=1:nrow(web_best_gb_ts), main = "WEB BEST", lwd = 3, cex.axis = 3, cex.main = 3);
-	legend('topleft', rownames(web_best_gb_ts), pch=1:nrow(web_best_gb_ts), fill = 1:nrow(web_best_gb_ts), cex = 3);
-
-	web_worst_gb_ts = matrix(nrow = nrow(web_worst_subs), ncol = ts_len);
-	rownames(web_worst_gb_ts) = c(web_worst_subs);
-	for (sub_name in c(web_worst_subs))
-	{
-		web_worst_gb_ts[sub_name, ] = calc_good_bad(igt_data[sub_name, ]);
-	}
-	matplot(t(web_worst_gb_ts), type = 'o', pch=1:nrow(web_worst_gb_ts), 
-			col=1:nrow(web_worst_gb_ts), bg=1:nrow(web_worst_gb_ts), main = "WEB WORST", lwd = 3, cex.axis = 3, cex.main = 3);
-	legend('bottomleft', rownames(web_worst_gb_ts), pch=1:nrow(web_worst_gb_ts), fill = 1:nrow(web_worst_gb_ts), cex = 3);
 	dev.off();
 }
 
@@ -765,7 +674,7 @@ total_clustering <- function(igt_data, score, num_of_clust = 3, col_range)
 }
 
 
-plot_horstmann_result <- function(horstmann_result, sub_exp_map)
+plot_horstmann_result <- function(horstmann_result, best_worst, sub_exp_map)
 {
 	num_of_blocks = dim(horstmann_result)[2];
 	w_outcome_median = matrix(apply(horstmann_result[,,'outcome'], 2, median), nrow = 1);
@@ -781,30 +690,105 @@ plot_horstmann_result <- function(horstmann_result, sub_exp_map)
 	png('/tmp/horstmann_result.png', width = 1360 * ratio, height = 768 * ratio);
 	attach(mtcars);
 	# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
-	par(cex = 3, cex.axis = 3, cex.main = 3, cex.lab = 3, mar = c(5,5,5,5));
+	par(cex = 3, cex.axis = 3, cex.main = 3, cex.lab = 3, mar = c(5,5,5,5) + 1);
 	layout(matrix(seq(1, 4), nrow = 2, ncol = 2, byrow = FALSE));
 
 	# plot total
-	matplot(t(total_data), type = 'o', pch = 1:3, col = 1:3, bg = 1:3, lwd = 3, main = "Total");
+	matplot(t(total_data), type = 'o', pch = 1:3, col = 1:3, bg = 1:3, lwd = 6,
+				main = "Total", ylab = "Median Weight", xlab = "Block");
 	legend('bottomright', rownames(total_data), pch = 1:3, fill = 1:3, cex = 3);
 
 	# plot by exp
 	groups = c('pen', 'com', 'web');
+	rn = rownames(sub_exp_map);		# get list of subjects that map to exp
 	for (g in groups)
 	{
-		sub_in_g = which(sub_exp_map == g);
+		sub_in_ind = which(sub_exp_map == g);	# extract index of subjects in g exp
+		sub_in_g = rn[sub_in_ind];			# extract sub names
+		sub_in_g = intersect(rownames(horstmann_result), sub_in_g);
 		curr_data = horstmann_result[sub_in_g,,];
 		cd_outcome_median = matrix(apply(curr_data[,,'outcome'], 2, median), nrow = 1);
-		rownames(cd_outcome_median) = c('outcome');
 		cd_gain_median = matrix(apply(curr_data[,,'gain'], 2, median), nrow = 1);
-		rownames(cd_gain_median) = c('gain');
 		cd_loss_median = matrix(apply(curr_data[,,'loss'], 2, median), nrow = 1);
+		rownames(cd_outcome_median) = c('outcome');
+		rownames(cd_gain_median) = c('gain');
 		rownames(cd_loss_median) = c('loss');
 		cd_bind = rbind(cd_outcome_median, cd_gain_median, cd_loss_median);
-		matplot(t(cd_bind), type = 'o', pch = 1:3, col = 1:3, bg = 1:3, lwd = 3, main = g);
+		matplot(t(cd_bind), type = 'o', pch = 1:3, col = 1:3, bg = 1:3, lwd = 6, 
+					main = g, ylab = "Median Weight", xlab = "Block");
 		legend('bottomright', rownames(cd_bind), pch = 1:3, fill = 1:3, cex = 3);
 	}
 	dev.off();
+
+
+	ratio = 2;
+	png('/tmp/horstmann_best_worst.png', width = 1360 * ratio, height = 768 * ratio);
+	attach(mtcars);
+	# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
+	par(cex = 3, cex.axis = 3, cex.main = 3, cex.lab = 3, mar = c(5,5,5,5) + 1);
+	layout(matrix(seq(6), nrow = 2, ncol = 3, byrow = FALSE));
+
+
+	sink('./friedman_posthoc.txt');
+	for (grp in c('pen', 'web', 'com'))
+	{
+		for (clus in c('best', 'worst'))
+		{
+			ind_name = paste(grp, clus, sep = '_');		# e.g. pen_worst
+			sub_in = rownames(best_worst[[ind_name]]);		# get subjects in this cluster
+
+			curr_data = horstmann_result[sub_in,,];
+			cd_outcome_median = matrix(apply(curr_data[,,'outcome'], 2, median), nrow = 1);
+			cd_gain_median = matrix(apply(curr_data[,,'gain'], 2, median), nrow = 1);
+			cd_loss_median = matrix(apply(curr_data[,,'loss'], 2, median), nrow = 1);
+			rownames(cd_outcome_median) = c('outcome');
+			rownames(cd_gain_median) = c('gain');
+			rownames(cd_loss_median) = c('loss');
+			cd_bind = rbind(cd_outcome_median, cd_gain_median, cd_loss_median);
+			matplot(t(cd_bind), type = 'o', pch = 1:3, col = 1:3, bg = 1:3, lwd = 6, 
+						main = ind_name, ylab = "Median Weight", xlab = "Block");
+			# calculate friedman test value for each block
+			for (bk in seq(num_of_blocks))
+			{
+				# create data frame
+				df_outcome = matrix(curr_data[, bk, 'outcome'], ncol = 1);
+				df_gain = matrix(curr_data[, bk, 'gain'], ncol = 1);
+				df_loss = matrix(curr_data[, bk, 'loss'], ncol = 1);
+				df_pre = cbind(df_outcome, df_gain, df_loss);
+				num_of_sub = dim(df_pre)[1];
+				sig_tr = 0.05;
+				df_frame = data.frame(Value = c(t(df_pre)), Group = factor(rep(c('outcome', 'gain', 'loss'), num_of_sub)), 
+									  Subjects = factor(rep(sub_in, each = 3)));
+				friedman_result = friedman.test.with.post.hoc(Value ~ Group | Subjects, data = df_frame, signif.P = sig_tr); 
+
+				print(sprintf("Group: %s, Cluster %s, Block %d\n", grp, clus, bk));
+				print(friedman_result);
+
+				if ("PostHoc.Test" %in% names(friedman_result))
+				{
+					print("<Post Hoc Analysis:>");
+					pvalue_mat = friedman_result$PostHoc.Test;
+					for (pv_ind in seq(dim(pvalue_mat)[1]))
+					{
+						if (pvalue_mat[pv_ind] <= sig_tr)
+						{
+							pv_grps = strsplit(rownames(pvalue_mat)[pv_ind], ' - ');
+							pv_grp1 = pv_grps[[1]][1];
+							pv_grp2 = pv_grps[[1]][2];
+							text(bk, cd_bind[pv_grp1, bk], '**', cex = 6);
+							text(bk, cd_bind[pv_grp2, bk], '**', cex = 6);
+						}
+					}
+					print("</Post Hoc Analysis:>");
+				} # Post Hoc
+			}
+			legend('topleft', rownames(cd_bind), pch = 1:3, fill = 1:3, cex = 3);
+		}
+	} # group
+	sink();
+	dev.off();
+
+	return;
 }
 
 
@@ -866,9 +850,23 @@ igt_doit <- function(igt_path, sub_path = '')
 		corr_learning_personality(sub_path, best_worst);
 	}
 
-#	plot_ts(dat, best_worst);
+	plot_ts(dat, best_worst);
 
 	total_clustering(dat, score, num_of_clust = 6, seq(3,10));
 
 	return(list("total_score" = score, "best_worst_score" = best_worst));
+}
+
+do_horstmann_analysis <- function(igt_path, sub_path = '')
+{
+	dat = load_exec_data(igt_path);
+	group_fname = "sub_exp_map";
+	sub_exp_map = read.csv(paste(igt_path, group_fname, sep="/"));
+	num_of_blocks = 5;
+	hor_a = horstmann_analysis(raw_data = dat, sub_exp_map, num_of_blocks);
+
+	score = calc_block_score(dat, sub_exp_map, num_of_blocks);
+	best_worst = get_best_worst_block_score(score, num_of_blocks, seq(3, num_of_blocks));
+
+	plot_horstmann_result(hor_a, best_worst, sub_exp_map);
 }
