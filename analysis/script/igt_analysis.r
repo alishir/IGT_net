@@ -30,7 +30,7 @@ load_exec_data <- function(igt_result_dir)
 	return(sub_deck_selection);
 }
 
-calc_20block_score_sub <- function(sub_trial, num_of_block)
+calc_20block_score_sub <- function(sub_trial, num_of_block, metric = 'outcome')
 {
         # sub_trial is subject triala, 100 trial of igt game
         block_score = matrix(data = NA, nrow = 1, ncol = num_of_block);
@@ -38,13 +38,13 @@ calc_20block_score_sub <- function(sub_trial, num_of_block)
         for (i in seq(num_of_block))
         {
                 block_trial = sub_trial[((i - 1) * bs + 1):(i * bs)];
-                block_score[1, i] = adv_disadv_score(block_trial);
+                block_score[1, i] = calc_score_with_metric(block_trial, metric);
         }
         return(block_score);
 }
 
 
-calc_block_score <- function(sub_data, groups, num_of_block)
+calc_block_score <- function(sub_data, groups, num_of_block, metric = 'outcome')
 {
 	num_sub = dim(sub_data)[1];
 	ret = list();
@@ -67,21 +67,21 @@ calc_block_score <- function(sub_data, groups, num_of_block)
 	{
 		if (s %in% rownames(sub_data))
 		{
-			com_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block);
+			com_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block, metric);
 		}
 	}
 	for (s in web_group)
 	{
 		if (s %in% rownames(sub_data))
 		{
-			web_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block);
+			web_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block, metric);
 		}
 	}
 	for (s in pen_group)
 	{
 		if (s %in% rownames(sub_data))
 		{
-			pen_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block);
+			pen_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block, metric);
 		}
 	}
 
@@ -232,13 +232,27 @@ get_best_worst_block_score <- function(score, nb, clus_cols)
 			  "web_best" = web_best_clus, "web_worst" = web_wors_clus));
 }
 
-adv_disadv_score <- function(trial)
+calc_score_with_metric <- function(trial, metric = 'outcome')
 {
+	if (metric == 'outcome')
+	{
         adv_deck = c(99 , 100, 3, 4);         # c, d
         disadv_deck = c(97, 98, 1, 2);        # a, b
-        num_adv_selection = sum(trial %in% adv_deck);
-        num_disadv_selection = sum(trial %in% disadv_deck);
-        return (num_adv_selection - num_disadv_selection);
+	}
+	else if (metric == 'loss')
+	{
+        adv_deck = c(98, 99, 100, 1, 2, 4);         # c, b, d
+        disadv_deck = c(97, 1);        				# a
+	}
+	else if (metric == 'gain')
+	{
+        adv_deck = c(98 , 100, 2, 4);         # b, d
+        disadv_deck = c(97, 99, 1, 3);        # a, c
+	}
+
+	num_adv_selection = sum(trial %in% adv_deck);
+	num_disadv_selection = sum(trial %in% disadv_deck);
+	return (num_adv_selection - num_disadv_selection);
 }
 
 
@@ -284,22 +298,53 @@ within_group_cluster <- function(score, group_name, col_range)
 	return(list("first" = clu_1st, "second" = clu_2nd));
 }
 
-calc_good_bad <- function(trial_choice)
+calc_good_bad <- function(trial_choice, metric = 'outcome')
 {
 	len = length(trial_choice);
 	good_bad = matrix(nrow = 1, ncol = len + 1);
 	good_bad[1, 1] = 0;
 	for (i in seq(1,len))
 	{
-		ch = trial_choice[i] - 96;  # deck A is 97, convert to matrix index
-		if (ch < 3)		# deck A, B
+		ch = intToUtf8(trial_choice[i]);
+		ch = tolower(ch);
+		if (metric == 'outcome')
 		{
-			good_bad[1, i + 1] = good_bad[1, i]  - 1;
+		#	ch = trial_choice[i] - 96;  # deck A is 97, convert to matrix index
+			if (ch %in% c('a', 'b'))		# deck A, B
+			{
+				good_bad[1, i + 1] = good_bad[1, i]  - 1;
+			}
+			else if (ch %in% c('c', 'd'))		# deck C, D
+			{
+				good_bad[1, i + 1] = good_bad[1, i]  + 1;
+			}
 		}
-		else		# deck C, D
+		else if (metric == 'loss')
 		{
-			good_bad[1, i + 1] = good_bad[1, i]  + 1;
+			if (ch %in% c('a'))		# deck A
+			{
+				good_bad[1, i + 1] = good_bad[1, i]  - 1;
+			}
+			else if (ch %in% c('c'))		# deck C
+			{
+				good_bad[1, i + 1] = good_bad[1, i]  + 2;
+			}
+			else if (ch %in% c('b', 'd'))		# deck B, D
+			{
+				good_bad[1, i + 1] = good_bad[1, i]  + 1;
+			}
 		}
+		else if (metric == 'gain')
+		{
+			if (ch %in% c('a', 'c'))		# deck A, B
+			{
+				good_bad[1, i + 1] = good_bad[1, i]  - 1;
+			}
+			else if (ch %in% c('b', 'd'))		# deck C, D
+			{
+				good_bad[1, i + 1] = good_bad[1, i]  + 1;
+			}
+		}	
 	}
 	return(good_bad);
 }
@@ -600,34 +645,39 @@ plot_ts <- function(igt_data, best_worst)
 
 
 	### PLOT Good-BadTime Series ####
-	ratio = 2;
-	png('/tmp/good_bad_outcome.png', width = 1360 * ratio, height = 768 * ratio);
-	attach(mtcars);
-	# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
-	layout(matrix(c(1, 2, 3, 4, 5, 6), nrow = 2, ncol = 3, byrow = FALSE));
-	# COM Best #
-	ts_len = 101;   # trial length
-	par(cex.axis = 3, cex.main = 3, cex.lab = 3, mar = c(6,6,6,6));
-
-
-	for (gr in groups)
+	metrics = c('outcome', 'gain', 'loss');
+	for (metric in metrics)
 	{
-		for (sg in sub_groups)
+		ratio = 2;
+		fn = paste('/tmp/good_bad', paste(metric, 'png', sep = '.'), sep = '_');
+		png(fn, width = 1360 * ratio, height = 768 * ratio);
+		attach(mtcars);
+		# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
+		layout(matrix(c(1, 2, 3, 4, 5, 6), nrow = 2, ncol = 3, byrow = FALSE));
+		# COM Best #
+		ts_len = 101;   # trial length
+		par(cex.axis = 3, cex.main = 3, cex.lab = 3, mar = c(6,6,6,6));
+
+
+		for (gr in groups)
 		{
-			key = paste(gr, sg, sep = '_'); # e.g. pen_worst
-			subs = matrix(rownames(best_worst[[key]]));
-			data_ts = matrix(nrow = nrow(subs), ncol = ts_len);
-			rownames(data_ts) = c(subs);
-			for (sub_name in subs)
+			for (sg in sub_groups)
 			{
-				data_ts[sub_name, ] = calc_good_bad(igt_data[sub_name, ]);
+				key = paste(gr, sg, sep = '_'); # e.g. pen_worst
+				subs = matrix(rownames(best_worst[[key]]));
+				data_ts = matrix(nrow = nrow(subs), ncol = ts_len);
+				rownames(data_ts) = c(subs);
+				for (sub_name in subs)
+				{
+					data_ts[sub_name, ] = calc_good_bad(igt_data[sub_name, ], metric);
+				}
+				matplot(t(data_ts), type = 'o', pch = 1:nrow(data_ts),
+						col = 1:nrow(data_ts), bg = 1:nrow(data_ts), main = key, lwd = 3, cex.axis = 3, cex.main = 3);
+				legend('topleft', rownames(data_ts), fill = 1:nrow(data_ts), cex = 3);
 			}
-			matplot(t(data_ts), type = 'o', pch = 1:nrow(data_ts),
-					col = 1:nrow(data_ts), bg = 1:nrow(data_ts), main = key, lwd = 3, cex.axis = 3, cex.main = 3);
-			legend('topleft', rownames(data_ts), fill = 1:nrow(data_ts), cex = 3);
 		}
+		dev.off();
 	}
-	dev.off();
 }
 
 
@@ -831,17 +881,18 @@ horstmann_analysis <- function(raw_data, sub_exp_map, num_of_blocks)
 }
 
 
-igt_doit <- function(igt_path, sub_path = '')
+igt_doit <- function(igt_path, metric = 'outcome', sub_path = '')
 {
 	dat = load_exec_data(igt_path);
 	group_fname = "sub_exp_map";
 	sub_exp_map = read.csv(paste(igt_path, group_fname, sep="/"));
 
-	num_of_block = 10;
-	score = calc_block_score(dat, sub_exp_map, num_of_block);
+	num_of_block = 5;
+	raw_score = calc_raw_score(dat, sub_exp_map, metric);
+	score = calc_block_score(dat, sub_exp_map, num_of_block, metric);
 
 
-	best_worst = get_best_worst_block_score(score, num_of_block, seq(6, num_of_block));
+	best_worst = get_best_worst_block_score(score, num_of_block, seq(3, num_of_block));
 
 	# there is some problem with "exists" function
 	if (nchar(sub_path) > 0)
@@ -852,7 +903,7 @@ igt_doit <- function(igt_path, sub_path = '')
 
 	plot_ts(dat, best_worst);
 
-	total_clustering(dat, score, num_of_clust = 6, seq(3,10));
+	total_clustering(dat, score, num_of_clust = 6, seq(3, 5));
 
 	return(list("total_score" = score, "best_worst_score" = best_worst));
 }
