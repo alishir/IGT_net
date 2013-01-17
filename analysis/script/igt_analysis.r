@@ -44,7 +44,13 @@ calc_20block_score_sub <- function(sub_trial, num_of_block, metric = 'outcome')
 }
 
 
-calc_block_score <- function(sub_data, groups, num_of_block, metric = 'outcome')
+
+#' calculate score of subject base on given metric and score type
+#' @param score_type how calculate score, types are 'raw' and 'block', 
+#' 		raw score is time serie of subject choices, and block score is subject
+#' 		choices per block
+#' @param metric metric to evaluate subject choices
+calc_block_score <- function(sub_data, groups, score_type = 'raw', num_of_block = 0, metric = 'outcome')
 {
 	num_sub = dim(sub_data)[1];
 	ret = list();
@@ -55,9 +61,19 @@ calc_block_score <- function(sub_data, groups, num_of_block, metric = 'outcome')
 	pen_group = groups_row_names[which(groups == 'pen')];
 	web_group = groups_row_names[which(groups == 'web')];
 
-	com_result = matrix(data = NA, nrow = length(com_group), ncol = num_of_block);
-	web_result = matrix(data = NA, nrow = length(web_group), ncol = num_of_block);
-	pen_result = matrix(data = NA, nrow = length(pen_group), ncol = num_of_block);
+	if (score_type == 'block')
+	{
+		com_result = matrix(data = NA, nrow = length(com_group), ncol = num_of_block);
+		web_result = matrix(data = NA, nrow = length(web_group), ncol = num_of_block);
+		pen_result = matrix(data = NA, nrow = length(pen_group), ncol = num_of_block);
+	}
+	else if (score_type == 'raw')
+	{
+		trial_len = dim(sub_data)[2] + 1;
+		com_result = matrix(data = NA, nrow = length(com_group), ncol = trial_len);
+		web_result = matrix(data = NA, nrow = length(web_group), ncol = trial_len);
+		pen_result = matrix(data = NA, nrow = length(pen_group), ncol = trial_len);
+	}
 
 	rownames(com_result) <- as.vector(com_group);
 	rownames(web_result) <- as.vector(web_group);
@@ -67,21 +83,42 @@ calc_block_score <- function(sub_data, groups, num_of_block, metric = 'outcome')
 	{
 		if (s %in% rownames(sub_data))
 		{
-			com_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block, metric);
+			if (score_type == 'block')
+			{
+				com_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block, metric);
+			}
+			else if (score_type == 'raw')
+			{
+				com_result[as.character(s), ] = calc_good_bad(sub_data[as.character(s), ], metric);
+			}
 		}
 	}
 	for (s in web_group)
 	{
 		if (s %in% rownames(sub_data))
 		{
-			web_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block, metric);
+			if (score_type == 'block')
+			{
+				web_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block, metric);
+			}
+			else if (score_type == 'raw')
+			{
+				web_result[as.character(s), ] = calc_good_bad(sub_data[as.character(s), ], metric);
+			}
 		}
 	}
 	for (s in pen_group)
 	{
 		if (s %in% rownames(sub_data))
 		{
-			pen_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block, metric);
+			if (score_type == 'block')
+			{
+				pen_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block, metric);
+			}
+			else if (score_type == 'raw')
+			{
+				pen_result[as.character(s), ] = calc_good_bad(sub_data[as.character(s), ], metric);
+			}
 		}
 	}
 
@@ -179,7 +216,7 @@ get_best_worst_block_score <- function(score, nb, clus_cols)
 	pen_2st_sd = apply(score$pen[pen_clus[[2]], ], 2, sd);
 
 
-	if (pen_1st_clus_mean[nb] + pen_1st_clus_mean[nb - 1] > pen_2st_clus_mean[nb] + pen_2st_clus_mean[nb - 1])
+	if (sum(pen_1st_clus_mean[(0.4) * nb:nb]) > sum(pen_2st_clus_mean[(0.4) * nb:nb]))
 	{
 		pen_best_clus = score$pen[pen_clus[[1]], ];
 		pen_wors_clus = score$pen[pen_clus[[2]], ];
@@ -199,7 +236,7 @@ get_best_worst_block_score <- function(score, nb, clus_cols)
 	com_1st_sd = apply(score$com[com_clus[[1]], ], 2, sd);
 	com_2st_sd = apply(score$com[com_clus[[2]], ], 2, sd);
 
-	if (com_1st_clus_mean[nb] + com_1st_clus_mean[nb - 1] > com_2st_clus_mean[nb] + com_2st_clus_mean[nb - 1])
+	if (sum(com_1st_clus_mean[(0.4) * nb:nb]) > sum(com_2st_clus_mean[(0.4) * nb:nb]))
 	{
 		com_best_clus = score$com[com_clus[[1]], ];
 		com_wors_clus = score$com[com_clus[[2]], ];
@@ -216,7 +253,7 @@ get_best_worst_block_score <- function(score, nb, clus_cols)
 #	web_2st_sd = apply(score$web[web_clus[[2]], ], 2, sd);
 	web_2st_sd = apply(matrix(score$web[web_clus[[2]], ], ncol = nb), 2, sd);
 
-	if (web_1st_clus_mean[nb] + web_1st_clus_mean[nb - 1] > web_2st_clus_mean[nb] + web_2st_clus_mean[nb - 1])
+	if (sum(web_1st_clus_mean[(0.4) * nb:nb]) > sum(web_2st_clus_mean[(0.4) * nb:nb]))
 	{
 		web_best_clus = score$web[web_clus[[1]], ];
 		web_wors_clus = score$web[web_clus[[2]], ];
@@ -272,8 +309,8 @@ within_group_cluster <- function(score, group_name, col_range)
 	# cluster subjects with in group and ask user to select groups
 	# score: a list of group scores e.g. score$com is the score of subjects in computer group
 	# group_name: string name of group in score variable e.g. "com"
-#	library('proxy');
-#	library('dtw');
+	#	library('proxy');
+	#	library('dtw');
 	#dis = dist(score[[group_name]], block_dist);
 	if (exists("col_range"))
 	{
@@ -289,8 +326,8 @@ within_group_cluster <- function(score, group_name, col_range)
 	ind = rownames(as.matrix(clusters));
 	clu_1st = ind[clusters %in% 1];
 	clu_2nd = ind[clusters %in% 2];
-#	detach('package:dtw');
-#	detach('package:proxy');
+	#	detach('package:dtw');
+	#	detach('package:proxy');
 	print("In within_cluster:");
 	print(group_name);
 	print(clu_1st);
@@ -323,11 +360,11 @@ calc_good_bad <- function(trial_choice, metric = 'outcome')
 		{
 			if (ch %in% c('a'))		# deck A
 			{
-				good_bad[1, i + 1] = good_bad[1, i]  - 1;
+				good_bad[1, i + 1] = good_bad[1, i]  - 5;
 			}
 			else if (ch %in% c('c'))		# deck C
 			{
-				good_bad[1, i + 1] = good_bad[1, i]  + 2;
+				good_bad[1, i + 1] = good_bad[1, i]  + 5;
 			}
 			else if (ch %in% c('b', 'd'))		# deck B, D
 			{
@@ -351,20 +388,20 @@ calc_good_bad <- function(trial_choice, metric = 'outcome')
 
 calc_acc_reward <- function(trial_choice)
 {
-  rew_pun = read.octave('pen.dat');
-  len = length(trial_choice);
-  acc_rew = matrix(nrow = 1, ncol = len + 1);
-  ind = matrix(c(1,1,1,1), nrow = 4, ncol = 1);
-  acc_rew[1,1] = 2000;  # initial deposit!
-  for (i in seq(1,len))
-  {
-    ch = trial_choice[i] - 96;  # deck A is 97, convert to matrix index
-    pin = ind[ch, 1];       # punishment index
-#    print(sprintf("i: %d, pin: %d, ch: %d", i, pin, ch));
-    acc_rew[1, i + 1] = acc_rew[1, i] + rew_pun$reward[ch, i] - rew_pun$punish[ch, pin];
-    ind[ch, 1] = ind[ch, 1] + 1;
-  }
-  return(acc_rew);
+	rew_pun = read.octave('pen.dat');
+	len = length(trial_choice);
+	acc_rew = matrix(nrow = 1, ncol = len + 1);
+	ind = matrix(c(1,1,1,1), nrow = 4, ncol = 1);
+	acc_rew[1,1] = 2000;  # initial deposit!
+	for (i in seq(1,len))
+	{
+		ch = trial_choice[i] - 96;  # deck A is 97, convert to matrix index
+		pin = ind[ch, 1];       # punishment index
+		#    print(sprintf("i: %d, pin: %d, ch: %d", i, pin, ch));
+		acc_rew[1, i + 1] = acc_rew[1, i] + rew_pun$reward[ch, i] - rew_pun$punish[ch, pin];
+		ind[ch, 1] = ind[ch, 1] + 1;
+	}
+	return(acc_rew);
 }
 
 
@@ -885,14 +922,15 @@ igt_doit <- function(igt_path, metric = 'outcome', sub_path = '')
 {
 	dat = load_exec_data(igt_path);
 	group_fname = "sub_exp_map";
-	sub_exp_map = read.csv(paste(igt_path, group_fname, sep="/"));
+	sub_exp_map = read.csv(paste(igt_path, group_fname, sep = "/"));
 
 	num_of_block = 5;
-	raw_score = calc_raw_score(dat, sub_exp_map, metric);
-	score = calc_block_score(dat, sub_exp_map, num_of_block, metric);
+	score = calc_block_score(sub_data = dat, groups = sub_exp_map, 
+							 score_type = 'raw', metric = metric);
 
 
-	best_worst = get_best_worst_block_score(score, num_of_block, seq(3, num_of_block));
+#	best_worst = get_best_worst_block_score(score, num_of_block, seq(3, num_of_block));
+	best_worst = get_best_worst_block_score(score, dim(dat)[2]);
 
 	# there is some problem with "exists" function
 	if (nchar(sub_path) > 0)
