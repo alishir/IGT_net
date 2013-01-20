@@ -349,37 +349,37 @@ calc_good_bad <- function(trial_choice, metric = 'outcome')
 		#	ch = trial_choice[i] - 96;  # deck A is 97, convert to matrix index
 			if (ch %in% c('a', 'b'))		# deck A, B
 			{
-				good_bad[1, i + 1] = good_bad[1, i]  - 1;
+				good_bad[1, i + 1] = good_bad[1, i]  - 0.86;
 			}
 			else if (ch %in% c('c', 'd'))		# deck C, D
 			{
-				good_bad[1, i + 1] = good_bad[1, i]  + 1;
+				good_bad[1, i + 1] = good_bad[1, i]  + 0.86;
 			}
 		}
 		else if (metric == 'loss')
 		{
 			if (ch %in% c('a'))		# deck A
 			{
-				good_bad[1, i + 1] = good_bad[1, i]  - 5;
+				good_bad[1, i + 1] = good_bad[1, i]  - 1.47;
 			}
 			else if (ch %in% c('c'))		# deck C
 			{
-				good_bad[1, i + 1] = good_bad[1, i]  + 5;
+				good_bad[1, i + 1] = good_bad[1, i]  + 0.79;
 			}
 			else if (ch %in% c('b', 'd'))		# deck B, D
 			{
-				good_bad[1, i + 1] = good_bad[1, i]  + 1;
+				good_bad[1, i + 1] = good_bad[1, i]  + 0.34;
 			}
 		}
 		else if (metric == 'gain')
 		{
 			if (ch %in% c('a', 'c'))		# deck A, B
 			{
-				good_bad[1, i + 1] = good_bad[1, i]  - 1;
+				good_bad[1, i + 1] = good_bad[1, i]  - 0.86;
 			}
 			else if (ch %in% c('b', 'd'))		# deck C, D
 			{
-				good_bad[1, i + 1] = good_bad[1, i]  + 1;
+				good_bad[1, i + 1] = good_bad[1, i]  + 0.86;
 			}
 		}	
 	}
