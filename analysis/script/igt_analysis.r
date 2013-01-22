@@ -785,6 +785,41 @@ plot_horstmann_result <- function(horstmann_result, best_worst, sub_exp_map)
 	# plot total
 	matplot(t(total_data), type = 'o', pch = 1:3, col = 1:3, bg = 1:3, lwd = 6,
 				main = "Total", ylab = "Median Weight", xlab = "Block");
+	# calculate friedman test value for each block
+	for (bk in seq(num_of_blocks))
+	{
+		# create data frame
+		df_outcome = matrix(horstmann_result[, bk, 'outcome'], ncol = 1);
+		df_gain = matrix(horstmann_result[, bk, 'gain'], ncol = 1);
+		df_loss = matrix(horstmann_result[, bk, 'loss'], ncol = 1);
+		df_pre = cbind(df_outcome, df_gain, df_loss);
+		num_of_sub = dim(df_pre)[1];
+		sig_tr = 0.05;
+		df_frame = data.frame(Value = c(t(df_pre)), Group = factor(rep(c('outcome', 'gain', 'loss'), num_of_sub)), 
+							  Subjects = factor(rep(rownames(horstmann_result), each = 3)));
+		friedman_result = friedman.test.with.post.hoc(Value ~ Group | Subjects, data = df_frame, signif.P = sig_tr); 
+
+		print(sprintf("Total Block %d\n", bk));
+		print(friedman_result);
+
+		if ("PostHoc.Test" %in% names(friedman_result))
+		{
+			print("<Post Hoc Analysis -- Total Data>");
+			pvalue_mat = friedman_result$PostHoc.Test;
+			for (pv_ind in seq(dim(pvalue_mat)[1]))
+			{
+				if (pvalue_mat[pv_ind] <= sig_tr)
+				{
+					pv_grps = strsplit(rownames(pvalue_mat)[pv_ind], ' - ');
+					pv_grp1 = pv_grps[[1]][1];
+					pv_grp2 = pv_grps[[1]][2];
+					text(bk, total_data[pv_grp1, bk], '**', cex = 6);
+					text(bk, total_data[pv_grp2, bk], '**', cex = 6);
+				}
+			}
+			print("</Post Hoc Analysis -- Total Data>");
+		} # Post Hoc
+	} # block
 	legend('bottomright', rownames(total_data), pch = 1:3, fill = 1:3, cex = 3);
 
 	# plot by exp
@@ -933,7 +968,7 @@ plot_horstmann_result <- function(horstmann_result, best_worst, sub_exp_map)
 					}
 					print("</Post Hoc Analysis:>");
 				} # Post Hoc
-			}
+			} # block
 			legend('topleft', rownames(cd_bind), pch = 1:3, fill = 1:3, cex = 3);
 		}
 	} # group
