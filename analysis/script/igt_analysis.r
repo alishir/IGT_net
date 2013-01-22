@@ -3,6 +3,8 @@ library('plotrix');
 library('pvclust');
 library('calibrate');
 library('dtw');
+library('WRS');		# Wilcox Robust Methods
+library('coin');	# Kruskal-Walls test
 source('./Friedman-Test-with-Post-Hoc.r');
 load_exec_data <- function(igt_result_dir)
 {
@@ -803,10 +805,73 @@ plot_horstmann_result <- function(horstmann_result, best_worst, sub_exp_map)
 		cd_bind = rbind(cd_outcome_median, cd_gain_median, cd_loss_median);
 		matplot(t(cd_bind), type = 'o', pch = 1:3, col = 1:3, bg = 1:3, lwd = 6, 
 					main = g, ylab = "Median Weight", xlab = "Block");
+		# calculate friedman test value for each block
+		for (bk in seq(num_of_blocks))
+		{
+			# create data frame
+			df_outcome = matrix(curr_data[, bk, 'outcome'], ncol = 1);
+			df_gain = matrix(curr_data[, bk, 'gain'], ncol = 1);
+			df_loss = matrix(curr_data[, bk, 'loss'], ncol = 1);
+			df_pre = cbind(df_outcome, df_gain, df_loss);
+			num_of_sub = dim(df_pre)[1];
+			sig_tr = 0.05;
+			df_frame = data.frame(Value = c(t(df_pre)), Group = factor(rep(c('outcome', 'gain', 'loss'), num_of_sub)), 
+								  Subjects = factor(rep(sub_in_g, each = 3)));
+			friedman_result = friedman.test.with.post.hoc(Value ~ Group | Subjects, data = df_frame, signif.P = sig_tr); 
+
+			print(sprintf("Group: %s, Block %d\n", g, bk));
+			print(friedman_result);
+
+			if ("PostHoc.Test" %in% names(friedman_result))
+			{
+				print("<Post Hoc Analysis:>");
+				pvalue_mat = friedman_result$PostHoc.Test;
+				for (pv_ind in seq(dim(pvalue_mat)[1]))
+				{
+					if (pvalue_mat[pv_ind] <= sig_tr)
+					{
+						pv_grps = strsplit(rownames(pvalue_mat)[pv_ind], ' - ');
+						pv_grp1 = pv_grps[[1]][1];
+						pv_grp2 = pv_grps[[1]][2];
+						text(bk, cd_bind[pv_grp1, bk], '**', cex = 6);
+						text(bk, cd_bind[pv_grp2, bk], '**', cex = 6);
+					}
+				}
+				print("</Post Hoc Analysis:>");
+			} # within group, Post Hoc
+
+
+		} # block
 		legend('bottomright', rownames(cd_bind), pch = 1:3, fill = 1:3, cex = 3);
+	} # group
+	# between group, kruskal-wallis test
+	sink('./between_group_kruskal.txt');
+	sig_tr = 0.05;
+	for (bk in seq(num_of_blocks))
+	{
+		for (metric in c('outcome', 'gain', 'loss'))
+		{
+			print(sprintf("Kruskal Test, Metric: %s, Block: %d", metric, bk));
+			kw_res = kruskal_wallis_test(dat = horstmann_result[, bk, metric], sub_exp_map);
+			for (pv_ind in seq(dim(kw_res)[1]))
+			{
+				if (kw_res[pv_ind] <= sig_tr)
+				{
+					pv_grps = strsplit(rownames(kw_res)[pv_ind], ' - ');
+					pv_grp1 = pv_grps[[1]][1];
+					pv_grp2 = pv_grps[[1]][2];
+					print(sprintf("++++++ Kruskal +++++++ Metric: %s, Block: %d, groups(%s, %s)", 
+								   metric, bk, pv_grp1, pv_grp2));
+					# text(bk, cd_bind[pv_grp1, bk], '+++', cex = 6);
+					# text(bk, cd_bind[pv_grp2, bk], '+++', cex = 6);
+				}
+			}
+		}
 	}
+	sink();
 	dev.off();
 
+	print("#############################");
 
 	ratio = 2;
 	png('/tmp/horstmann_best_worst.png', width = 1360 * ratio, height = 768 * ratio);
@@ -877,6 +942,56 @@ plot_horstmann_result <- function(horstmann_result, best_worst, sub_exp_map)
 
 	return;
 }
+
+kruskal_wallis_test <- function(dat, sub_exp_map)
+{
+	rn = rownames(sub_exp_map);		# get list of subjects
+	pen_sub_ind = which(sub_exp_map == 'pen');	# extract index of subjects in g exp
+	com_sub_ind = which(sub_exp_map == 'com');	# extract index of subjects in g exp
+	web_sub_ind = which(sub_exp_map == 'web');	# extract index of subjects in g exp
+
+	pen_subs = rn[pen_sub_ind];			# extract sub names
+	com_subs = rn[com_sub_ind];			# extract sub names
+	web_subs = rn[web_sub_ind];			# extract sub names
+
+	pen_subs = intersect(rownames(as.matrix(dat)), pen_subs);
+	com_subs = intersect(rownames(as.matrix(dat)), com_subs);
+	web_subs = intersect(rownames(as.matrix(dat)), web_subs);
+
+	pen_data = matrix(dat[pen_subs], ncol = 1);
+	web_data = matrix(dat[web_subs], ncol = 1);
+	com_data = matrix(dat[com_subs], ncol = 1);
+
+	df_pre = rbind(pen_data, web_data, com_data);
+	num_of_subs = dim(df_pre)[1];
+
+	pre_data = data.frame(Value = c(t(df_pre)), Groups = factor(c(rep('pen', dim(pen_data)[1]),
+																  rep('web', dim(web_data)[1]),
+																  rep('com', dim(com_data)[1]))));
+
+	kw = kruskal_test(Value ~ Groups, data = pre_data, 
+					  distribution = approximate(B = 99999));
+
+	### Nemenyi-Damico-Wolfe-Dunn test (joint ranking)
+    ### Hollander & Wolfe (1999), page 244 
+    ### (where Steel-Dwass results are given)
+	if (require("multcomp")) 
+	{
+		NDWD = oneway_test(Value ~ Groups, data = pre_data,
+							ytrafo = function(data) trafo(data, numeric_trafo = rank),
+							xtrafo = function(data) trafo(data, factor_trafo = function(x)
+														  model.matrix(~x - 1) %*% t(contrMat(table(x), "Tukey"))),
+							teststat = "max", distribution = approximate(B = 90000))
+
+		### global p-value
+		print(pvalue(NDWD));
+
+		ret_val = print(pvalue(NDWD, method = "single-step"));
+	}
+	
+	return (ret_val);
+}
+
 
 
 horstmann_analysis <- function(raw_data, sub_exp_map, num_of_blocks)
@@ -954,8 +1069,11 @@ do_horstmann_analysis <- function(igt_path, sub_path = '')
 	num_of_blocks = 5;
 	hor_a = horstmann_analysis(raw_data = dat, sub_exp_map, num_of_blocks);
 
-	score = calc_block_score(dat, sub_exp_map, num_of_blocks);
+#	score = calc_block_score(dat, sub_exp_map, num_of_blocks);
+	score = calc_block_score(sub_data = dat, groups = sub_exp_map, 
+							 score_type = 'block', num_of_block = num_of_blocks, metric = 'outcome');
 	best_worst = get_best_worst_block_score(score, num_of_blocks, seq(3, num_of_blocks));
 
 	plot_horstmann_result(hor_a, best_worst, sub_exp_map);
+	return(hor_a);
 }
