@@ -52,88 +52,72 @@ calc_20block_score_sub <- function(sub_trial, num_of_block, metric = 'outcome')
 #' 		raw score is time serie of subject choices, and block score is subject
 #' 		choices per block
 #' @param metric metric to evaluate subject choices
-calc_block_score <- function(sub_data, groups, score_type = 'raw', num_of_block = 0, metric = 'outcome')
+#' @param sub_data matrix of subjects data, should have rownames
+calc_block_score <- function(sub_data, group_map = NA, score_type = 'raw', num_of_block = 0, metric = 'outcome')
 {
-	num_sub = dim(sub_data)[1];
 	ret = list();
-
-	groups_row_names = rownames(groups);
-
-	com_group = groups_row_names[which(groups == 'com')];
-	pen_group = groups_row_names[which(groups == 'pen')];
-	web_group = groups_row_names[which(groups == 'web')];
-
 	if (score_type == 'block')
 	{
-		com_result = matrix(data = NA, nrow = length(com_group), ncol = num_of_block);
-		web_result = matrix(data = NA, nrow = length(web_group), ncol = num_of_block);
-		pen_result = matrix(data = NA, nrow = length(pen_group), ncol = num_of_block);
+		score_len = num_of_block;
 	}
 	else if (score_type == 'raw')
 	{
-		trial_len = dim(sub_data)[2] + 1;
-		com_result = matrix(data = NA, nrow = length(com_group), ncol = trial_len);
-		web_result = matrix(data = NA, nrow = length(web_group), ncol = trial_len);
-		pen_result = matrix(data = NA, nrow = length(pen_group), ncol = trial_len);
+		score_len = dim(sub_data)[2] + 1;
 	}
 
-	rownames(com_result) <- as.vector(com_group);
-	rownames(web_result) <- as.vector(web_group);
-	rownames(pen_result) <- as.vector(pen_group);
-
-	for (s in com_group)
+	if (is.na(group_map))
 	{
-		if (s %in% rownames(sub_data))
+		sub_in_group = rownames(sub_data);
+		curr_score = matrix(data = NA, nrow = length(sub_in_group), ncol = score_len);
+		rownames(curr_score) = as.vector(sub_in_group);
+
+		for (s in sub_in_group)
 		{
-			if (score_type == 'block')
+			if (s %in% rownames(sub_data))
 			{
-				com_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block, metric);
+				if (score_type == 'block')
+				{
+					curr_score[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block, metric);
+				}
+				else if (score_type == 'raw')
+				{
+					curr_score[as.character(s), ] = calc_good_bad(sub_data[as.character(s), ], metric);
+				}
 			}
-			else if (score_type == 'raw')
-			{
-				com_result[as.character(s), ] = calc_good_bad(sub_data[as.character(s), ], metric);
-			}
-		}
-	}
-	for (s in web_group)
+		} # subject in group
+		return(curr_score);
+	} # not exists group_map
+
+	groups = c('com', 'web', 'pen');
+	for (gr in groups)
 	{
-		if (s %in% rownames(sub_data))
+		sub_in_group = rownames(group_map)[which(group_map == gr)];
+		curr_score = matrix(data = NA, nrow = length(sub_in_group), ncol = score_len);
+		rownames(curr_score) = as.vector(sub_in_group);
+
+		for (s in sub_in_group)
 		{
-			if (score_type == 'block')
+			if (s %in% rownames(sub_data))
 			{
-				web_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block, metric);
+				if (score_type == 'block')
+				{
+					curr_score[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block, metric);
+				}
+				else if (score_type == 'raw')
+				{
+					curr_score[as.character(s), ] = calc_good_bad(sub_data[as.character(s), ], metric);
+				}
 			}
-			else if (score_type == 'raw')
-			{
-				web_result[as.character(s), ] = calc_good_bad(sub_data[as.character(s), ], metric);
-			}
-		}
-	}
-	for (s in pen_group)
-	{
-		if (s %in% rownames(sub_data))
-		{
-			if (score_type == 'block')
-			{
-				pen_result[as.character(s), ] = calc_20block_score_sub(sub_data[as.character(s), ], num_of_block, metric);
-			}
-			else if (score_type == 'raw')
-			{
-				pen_result[as.character(s), ] = calc_good_bad(sub_data[as.character(s), ], metric);
-			}
-		}
-	}
+		} # subject in group
 
-	# remove all NA rows
-	com_result = com_result[rowSums(is.na(com_result)) == 0, ];
-	web_result = web_result[rowSums(is.na(web_result)) == 0, ];
-	pen_result = pen_result[rowSums(is.na(pen_result)) == 0, ];
+		# remove NA lines
+		curr_score = curr_score[rowSums(is.na(curr_score)) == 0, ];
+		print(sprintf("size of %s group: %d\n", toupper(gr), nrow(curr_score)));
+		ret[[gr]] = curr_score;
 
-	cat(sprintf("size of COM group: %d\n",nrow(com_result)));
-	cat(sprintf("size of PEN group: %d\n",nrow(pen_result)));
-	cat(sprintf("size of WEB group: %d\n",nrow(web_result)));
+	} # list of groups
+	return(ret);
 
-	return(list("com" = com_result, "pen" = pen_result, "web" = web_result));
 }
 
 plot_20block_score <- function(score)
@@ -194,81 +178,56 @@ plot_20block_score <- function(score)
 }
 
 # clus_cols: columns that used in clustering
-get_best_worst_block_score <- function(score, nb, clus_cols)
+# @param rand_score, random scores to filter random players
+get_best_worst_block_score <- function(score, clus_cols, rand_score = NA)
 {
-	x <- seq(1, 5);
-	plot_col = c("red", "green", "blue", "white");
-	pen_mean_score = colMeans(score$pen);
-	web_mean_score = colMeans(score$web);
-	com_mean_score = colMeans(score$com);
-
-	pen_sd = apply(score$pen, 2, sd);
-	web_sd = apply(score$web, 2, sd);
-	com_sd = apply(score$com, 2, sd);
-
-	# extract two cluster in each group
-	pen_clus = within_group_cluster(score, "pen", clus_cols);
-	com_clus = within_group_cluster(score, "com", clus_cols);
-	web_clus = within_group_cluster(score, "web", clus_cols);
-
-
-	pen_1st_clus_mean = colMeans(score$pen[pen_clus[[1]], ]);
-	pen_2st_clus_mean = colMeans(score$pen[pen_clus[[2]], ]);
-	pen_1st_sd = apply(score$pen[pen_clus[[1]], ], 2, sd);
-	pen_2st_sd = apply(score$pen[pen_clus[[2]], ], 2, sd);
-
-
-	if (sum(pen_1st_clus_mean[(0.4) * nb:nb]) > sum(pen_2st_clus_mean[(0.4) * nb:nb]))
+	ret_val = list();
+	nb = dim(score$pen)[2];
+	groups = c('com', 'web', 'pen');
+	num_of_clusters = 3;
+	for (gr in groups)
 	{
-		pen_best_clus = score$pen[pen_clus[[1]], ];
-		pen_wors_clus = score$pen[pen_clus[[2]], ];
+		curr_score = score[[gr]];
+		if (!is.na(rand_score))
+		{
+			curr_score = rbind(curr_score, rand_score);
+		}
+		curr_mean_score = apply(curr_score, 2, mean);
+		curr_sd = apply(curr_score, 2, sd);
+		curr_clus = within_group_cluster(curr_score, num_of_clusters = 3, clus_cols);
+
+		curr_clus_medians = apply(curr_score[curr_clus[[1]], ], 2, median);
+		curr_clus_sd = apply(curr_score[curr_clus[[1]], ], 2, sd);
+		for (clus_ind in seq(2, num_of_clusters))
+		{
+			curr_clus_medians = rbind(curr_clus_medians, apply(curr_score[curr_clus[[clus_ind]], ], 2, median));
+			curr_clus_sd = rbind(curr_clus_sd, apply(curr_score[curr_clus[[clus_ind]], ], 2, sd));
+		}
+
+		learned_portion = curr_clus_medians[, ceiling((0.41) * nb):nb];
+		sum_learned_portion = apply(learned_portion, 1, sum);
+		best_ind = which(sum_learned_portion == max(sum_learned_portion))[1];
+		worst_ind = which(sum_learned_portion == min(sum_learned_portion))[1];
+
+		ret_val[[gr]] = list();
+		for (clus_ind in seq(num_of_clusters))
+		{
+			if (clus_ind == best_ind)
+			{
+				key = "best";
+			}
+			else if (clus_ind == worst_ind)
+			{
+				key = "worst";
+			}
+			else
+			{
+				key = paste("other", clus_ind, sep = "_");
+			}
+			ret_val[[gr]][[key]] = curr_score[curr_clus[[clus_ind]], ];
+		}
 	}
-	else
-	{
-		pen_best_clus = score$pen[pen_clus[[2]], ];
-		pen_wors_clus = score$pen[pen_clus[[1]], ];
-	}
-
-
-
-#	com_1st_clus_mean = colMeans(score$com[com_clus[[1]], ]);
-	com_1st_clus_mean = apply(score$com[com_clus[[1]], ], 2, mean);
-#	com_2st_clus_mean = colMeans(score$com[com_clus[[2]], ]);
-	com_2st_clus_mean = apply(score$com[com_clus[[2]], ], 2, mean);
-	com_1st_sd = apply(score$com[com_clus[[1]], ], 2, sd);
-	com_2st_sd = apply(score$com[com_clus[[2]], ], 2, sd);
-
-	if (sum(com_1st_clus_mean[(0.4) * nb:nb]) > sum(com_2st_clus_mean[(0.4) * nb:nb]))
-	{
-		com_best_clus = score$com[com_clus[[1]], ];
-		com_wors_clus = score$com[com_clus[[2]], ];
-	}
-	else
-	{
-		com_best_clus = score$com[com_clus[[2]], ];
-		com_wors_clus = score$com[com_clus[[1]], ];
-	}
-
-	web_1st_clus_mean = apply(score$web[web_clus[[1]], ], 2, mean);
-	web_2st_clus_mean = apply(matrix(score$web[web_clus[[2]], ], ncol = nb), 2, mean);
-	web_1st_sd = apply(score$web[web_clus[[1]], ], 2, sd);
-#	web_2st_sd = apply(score$web[web_clus[[2]], ], 2, sd);
-	web_2st_sd = apply(matrix(score$web[web_clus[[2]], ], ncol = nb), 2, sd);
-
-	if (sum(web_1st_clus_mean[(0.4) * nb:nb]) > sum(web_2st_clus_mean[(0.4) * nb:nb]))
-	{
-		web_best_clus = score$web[web_clus[[1]], ];
-		web_wors_clus = score$web[web_clus[[2]], ];
-	}
-	else
-	{
-		web_best_clus = score$web[web_clus[[2]], ];
-		web_wors_clus = score$web[web_clus[[1]], ];
-	}
-
-  return(list("com_best" = com_best_clus, "com_worst" = com_wors_clus, 
-			  "pen_best" = pen_best_clus, "pen_worst" = pen_wors_clus, 
-			  "web_best" = web_best_clus, "web_worst" = web_wors_clus));
+	return(ret_val);
 }
 
 calc_score_with_metric <- function(trial, metric = 'outcome')
@@ -306,35 +265,33 @@ block_dist <- function(x, y)
 }
 
 
-within_group_cluster <- function(score, group_name, col_range)
+within_group_cluster <- function(score, num_of_clusters = 2, col_range)
 {
 	# cluster subjects with in group and ask user to select groups
 	# score: a list of group scores e.g. score$com is the score of subjects in computer group
-	# group_name: string name of group in score variable e.g. "com"
+	# @return list of clusters each contain subjects id
 	#	library('proxy');
 	#	library('dtw');
-	#dis = dist(score[[group_name]], block_dist);
+	ret_val = list();
 	if (exists("col_range"))
 	{
-		dis = dist(score[[group_name]][, col_range],  method = "DTW");
+		dis = dist(score[, col_range],  method = "DTW");
 	}
 	else
 	{
-		dis = dist(score[[group_name]],  method = "DTW");
+		dis = dist(score,  method = "DTW");
 	}
 	hc = hclust(dis, method = "ward");
 	plot(hc);
-	clusters = cutree(hc, k = 2);
+	clusters = cutree(hc, k = num_of_clusters);
 	ind = rownames(as.matrix(clusters));
-	clu_1st = ind[clusters %in% 1];
-	clu_2nd = ind[clusters %in% 2];
-	#	detach('package:dtw');
-	#	detach('package:proxy');
-	print("In within_cluster:");
-	print(group_name);
-	print(clu_1st);
-	print(clu_2nd);
-	return(list("first" = clu_1st, "second" = clu_2nd));
+	
+	for (clus_ind in seq(num_of_clusters))
+	{
+		ret_val[[clus_ind]] = ind[clusters %in% clus_ind];
+		print(ret_val[[clus_ind]]);
+	}
+	return(ret_val);
 }
 
 calc_good_bad <- function(trial_choice, metric = 'outcome')
@@ -653,22 +610,23 @@ plot_bas_bis <- function(sub_path, best_worst, num_of_block)
 
 plot_ts <- function(igt_data, best_worst)
 {
+	num_of_groups = length(names(best_worst));
+	num_of_clusters_per_group = length(names(best_worst[[names(best_worst)[1]]]));
 	### PLOT Time Series ####
 	ratio = 2;
 	png('/tmp/acc_reward.png', width = 1360 * ratio, height = 768 * ratio);
 	attach(mtcars);
 	# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
-	layout(matrix(c(1, 2, 3, 4, 5, 6), nrow = 2, ncol = 3, byrow = FALSE));
+	layout(matrix(seq(num_of_clusters_per_group * num_of_groups), 
+				  nrow = num_of_clusters_per_group, ncol = num_of_groups, byrow = FALSE));
 
-	groups = c('pen', 'com', 'web');
-	sub_groups = c('best', 'worst');
+	groups = names(best_worst);
 	ts_len = 101;   # trial length
 	for (gr in groups)
 	{
-		for (sg in sub_groups)
+		for (sg in names(best_worst[[gr]]))
 		{
-			key = paste(gr, sg, sep = '_'); # e.g. pen_worst
-			subs = matrix(rownames(best_worst[[key]]));
+			subs = matrix(rownames(best_worst[[gr]][[sg]]));
 			data_ts = matrix(nrow = nrow(subs), ncol = ts_len);
 			rownames(data_ts) = c(subs);
 			for (sub_name in subs)
@@ -676,8 +634,9 @@ plot_ts <- function(igt_data, best_worst)
 				data_ts[sub_name, ] = calc_acc_reward(igt_data[sub_name, ]);
 			}
 			matplot(t(data_ts), type = 'o', pch = 1:nrow(data_ts),
-					col = 1:nrow(data_ts), bg = 1:nrow(data_ts), main = key, lwd = 3, cex.axis = 3, cex.main = 3);
-			legend('topleft', rownames(data_ts), fill = 1:nrow(data_ts), cex = 3);
+					col = 1:nrow(data_ts), bg = 1:nrow(data_ts), main = paste(gr, sg, sep = "_"), 
+					lwd = 3, cex.axis = 3, cex.main = 3);
+			legend('topleft', rownames(data_ts), fill = 1:nrow(data_ts), cex = 3, ncol = 3);
 		}
 	}
 	dev.off();
@@ -689,10 +648,12 @@ plot_ts <- function(igt_data, best_worst)
 	{
 		ratio = 2;
 		fn = paste('/tmp/good_bad', paste(metric, 'png', sep = '.'), sep = '_');
-		png(fn, width = 1360 * ratio, height = 768 * ratio);
+	#	png(fn, width = 1360 * ratio, height = 768 * ratio);
+		png(fn, width = 1360 * ratio, height = 1360 * ratio);
 		attach(mtcars);
 		# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
-		layout(matrix(c(1, 2, 3, 4, 5, 6), nrow = 2, ncol = 3, byrow = FALSE));
+		layout(matrix(seq(num_of_clusters_per_group * num_of_groups), 
+					  nrow = num_of_clusters_per_group, ncol = num_of_groups, byrow = FALSE));
 		# COM Best #
 		ts_len = 101;   # trial length
 		par(cex.axis = 3, cex.main = 3, cex.lab = 3, mar = c(6,6,6,6));
@@ -700,10 +661,9 @@ plot_ts <- function(igt_data, best_worst)
 
 		for (gr in groups)
 		{
-			for (sg in sub_groups)
+			for (sg in names(best_worst[[gr]]))
 			{
-				key = paste(gr, sg, sep = '_'); # e.g. pen_worst
-				subs = matrix(rownames(best_worst[[key]]));
+				subs = matrix(rownames(best_worst[[gr]][[sg]]));
 				data_ts = matrix(nrow = nrow(subs), ncol = ts_len);
 				rownames(data_ts) = c(subs);
 				for (sub_name in subs)
@@ -711,8 +671,9 @@ plot_ts <- function(igt_data, best_worst)
 					data_ts[sub_name, ] = calc_good_bad(igt_data[sub_name, ], metric);
 				}
 				matplot(t(data_ts), type = 'o', pch = 1:nrow(data_ts),
-						col = 1:nrow(data_ts), bg = 1:nrow(data_ts), main = key, lwd = 3, cex.axis = 3, cex.main = 3);
-				legend('topleft', rownames(data_ts), fill = 1:nrow(data_ts), cex = 3);
+						col = 1:nrow(data_ts), bg = 1:nrow(data_ts), main = paste(gr, sg, sep = "_"),
+					   	lwd = 3, cex.axis = 3, cex.main = 3);
+				legend('topleft', rownames(data_ts), fill = 1:nrow(data_ts), cex = 3, ncol = 3);
 			}
 		}
 		dev.off();
@@ -879,6 +840,7 @@ plot_horstmann_result <- function(horstmann_result, best_worst, sub_exp_map)
 		} # block
 		legend('bottomright', rownames(cd_bind), pch = 1:3, fill = 1:3, cex = 3);
 	} # group
+
 	# between group, kruskal-wallis test
 	sink('./between_group_kruskal.txt');
 	sig_tr = 0.05;
@@ -1075,7 +1037,7 @@ igt_doit <- function(igt_path, metric = 'outcome', sub_path = '')
 	sub_exp_map = read.csv(paste(igt_path, group_fname, sep = "/"));
 
 	num_of_block = 5;
-	score = calc_block_score(sub_data = dat, groups = sub_exp_map, 
+	score = calc_block_score(sub_data = dat, group_map = sub_exp_map, 
 							 score_type = 'raw', metric = metric);
 
 
@@ -1105,10 +1067,39 @@ do_horstmann_analysis <- function(igt_path, sub_path = '')
 	hor_a = horstmann_analysis(raw_data = dat, sub_exp_map, num_of_blocks);
 
 #	score = calc_block_score(dat, sub_exp_map, num_of_blocks);
-	score = calc_block_score(sub_data = dat, groups = sub_exp_map, 
+	score = calc_block_score(sub_data = dat, group_map = sub_exp_map, 
 							 score_type = 'block', num_of_block = num_of_blocks, metric = 'outcome');
 	best_worst = get_best_worst_block_score(score, num_of_blocks, seq(3, num_of_blocks));
 
 	plot_horstmann_result(hor_a, best_worst, sub_exp_map);
 	return(hor_a);
+}
+
+create_random_subjects <- function(num_subs, prefix = "rand")
+{
+	num_rand_sub = num_subs;
+	trial_len = 100;
+	random_subjects = matrix(ceiling(runif(num_rand_sub * trial_len, min = 0, max = 4) + 96), 
+							 nrow = num_rand_sub, ncol = trial_len);
+	rownames(random_subjects) = as.vector(lapply(as.matrix(seq(num_rand_sub)), 
+														   FUN = function(x) {
+															   paste(prefix, x, sep = "_");
+														   }));
+	return(random_subjects);
+}
+
+decision_strategy_analysis <- function(igt_path, sub_path = '', metric = 'outcome')
+{
+	dat = load_exec_data(igt_path);
+	group_fname = "sub_exp_map";
+	sub_exp_map = read.csv(paste(igt_path, group_fname, sep = "/"));
+
+	score = calc_block_score(sub_data = dat, group_map = sub_exp_map, 
+							 score_type = 'raw', metric = metric);
+	random_subjects = create_random_subjects(30);
+	random_score = calc_block_score(sub_data = random_subjects);
+
+	best_worst = get_best_worst_block_score(score, rand_score = random_score);
+	dat = rbind(dat, random_subjects);
+	plot_ts(dat, best_worst);
 }
