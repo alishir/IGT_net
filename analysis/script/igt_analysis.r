@@ -430,7 +430,8 @@ plot_bas_bis <- function(sub_path, best_worst, num_of_block)
 {
 	ratio = 2;
 	par(cex.axis = 3, cex.main = 3, cex.lab = 3);
-	png('/tmp/res.png', width = 1360 * ratio, height = 768 * ratio);
+	png(paste(BASE_PATH, 'res.png', sep = "/"), 
+		width = 1360 * ratio, height = 768 * ratio);
 	attach(mtcars);
 	# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
 	layout(matrix(c(1,2,3,4,5,5,7,9,6,6,8,8), nrow = 3, ncol = 4, byrow = TRUE));
@@ -614,7 +615,8 @@ plot_ts <- function(igt_data, best_worst)
 	num_of_clusters_per_group = length(names(best_worst[[names(best_worst)[1]]]));
 	### PLOT Time Series ####
 	ratio = 2;
-	png('/tmp/acc_reward.png', width = 1360 * ratio, height = 768 * ratio);
+	png(paste(BASE_PATH, 'acc_reward.png', sep = "/"), 
+		width = 1360 * ratio, height = 768 * ratio);
 	attach(mtcars);
 	# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
 	layout(matrix(seq(num_of_clusters_per_group * num_of_groups), 
@@ -631,6 +633,7 @@ plot_ts <- function(igt_data, best_worst)
 			rownames(data_ts) = c(subs);
 			for (sub_name in subs)
 			{
+				print(sub_name);
 				data_ts[sub_name, ] = calc_acc_reward(igt_data[sub_name, ]);
 			}
 			matplot(t(data_ts), type = 'o', pch = 1:nrow(data_ts),
@@ -647,7 +650,8 @@ plot_ts <- function(igt_data, best_worst)
 	for (metric in metrics)
 	{
 		ratio = 2;
-		fn = paste('/tmp/good_bad', paste(metric, 'png', sep = '.'), sep = '_');
+		fn = paste(paste(BASE_PATH, 'good_bad', sep = "/"), 
+				   paste(metric, 'png', sep = '.'), sep = '_');
 	#	png(fn, width = 1360 * ratio, height = 768 * ratio);
 		png(fn, width = 1360 * ratio, height = 1360 * ratio);
 		attach(mtcars);
@@ -698,7 +702,8 @@ total_clustering <- function(igt_data, score, num_of_clust = 3, col_range)
 	}
 
 	ratio = 2;
-	png('/tmp/total_clusts.png', width = 1360 * ratio, height = 768 * ratio);
+	png(paste(BASE_PATH, 'total_clusts.png', sep = "/"), 
+		width = 1360 * ratio, height = 768 * ratio);
 	attach(mtcars);
 	# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
 	p_ncol = ceiling(num_of_clust / 2);
@@ -737,7 +742,8 @@ plot_horstmann_result <- function(horstmann_result, best_worst, sub_exp_map)
 	total_data = rbind(w_outcome_median, w_gain_median, w_loss_median);
 
 	ratio = 2;
-	png('/tmp/horstmann_result.png', width = 1360 * ratio, height = 768 * ratio);
+	png(paste(BASE_PATH, 'horstman_result.png', sep = "/"), 
+		width = 1360 * ratio, height = 768 * ratio);
 	attach(mtcars);
 	# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
 	par(cex = 3, cex.axis = 3, cex.main = 3, cex.lab = 3, mar = c(5,5,5,5) + 1);
@@ -871,7 +877,8 @@ plot_horstmann_result <- function(horstmann_result, best_worst, sub_exp_map)
 	print("#############################");
 
 	ratio = 2;
-	png('/tmp/horstmann_best_worst.png', width = 1360 * ratio, height = 768 * ratio);
+	png(paste(BASE_PATH, 'horstmann_best_worst.png', sep = "/"),
+		width = 1360 * ratio, height = 768 * ratio);
 	attach(mtcars);
 	# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
 	par(cex = 3, cex.axis = 3, cex.main = 3, cex.lab = 3, mar = c(5,5,5,5) + 1);
@@ -1083,7 +1090,7 @@ create_random_subjects <- function(num_subs, prefix = "rand")
 							 nrow = num_rand_sub, ncol = trial_len);
 	rownames(random_subjects) = as.vector(lapply(as.matrix(seq(num_rand_sub)), 
 														   FUN = function(x) {
-															   paste(prefix, x, sep = "_");
+															   sprintf("%s_%02d", prefix, x);
 														   }));
 	return(random_subjects);
 }
@@ -1102,4 +1109,18 @@ decision_strategy_analysis <- function(igt_path, sub_path = '', metric = 'outcom
 	best_worst = get_best_worst_block_score(score, rand_score = random_score);
 	dat = rbind(dat, random_subjects);
 	plot_ts(dat, best_worst);
+	save.image(paste(BASE_PATH, "image.dat", sep = "/"));
+	rm(list = ls());
+}
+
+runner <- function(FUN, igt_path, metric = 'outcome', result_base_path = "/tmp", num_of_run = 30)
+{
+	for (run in seq(num_of_run))
+	{
+		print(sprintf("-=:: Run %02d ::=.", run));
+		BASE_PATH <<- sprintf("%s/run_%02d", result_base_path, run);
+		print(BASE_PATH);
+		dir.create(BASE_PATH);
+		FUN(igt_path = igt_path, metric = metric)
+	}
 }
