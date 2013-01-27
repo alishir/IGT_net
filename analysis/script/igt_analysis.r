@@ -19,7 +19,7 @@ load_exec_data <- function(igt_result_dir)
 	sub_size = length(sub_list);
 	sub_deck_selection = matrix(data = NA, nrow = sub_size, ncol = 100);
 	sub_ids = lapply(sub_list, function(e) {substr(e, 1, nchar(e) - 4);});
-	rownames(sub_deck_selection) <- as.vector(sub_ids);
+	rownames(sub_deck_selection) = as.vector(sub_ids);
 
 	cat(sprintf("number of subjects: %d\n", sub_size));
 	for (i in sub_list)
@@ -122,7 +122,7 @@ calc_block_score <- function(sub_data, group_map = NA, score_type = 'raw', num_o
 
 plot_20block_score <- function(score)
 {
-	x <- seq(1, 5);
+	x = seq(1, 5);
 	plot_col = c("red", "green", "blue", "white");
 	pen_mean_score = colMeans(score$pen);
 	web_mean_score = colMeans(score$web);
@@ -628,9 +628,9 @@ plot_ts <- function(igt_data, best_worst)
 	{
 		for (sg in names(best_worst[[gr]]))
 		{
-			subs = matrix(rownames(best_worst[[gr]][[sg]]));
-			data_ts = matrix(nrow = nrow(subs), ncol = ts_len);
-			rownames(data_ts) = c(subs);
+			subs = rownames(best_worst[[gr]][[sg]]);
+			data_ts = matrix(nrow = length(subs), ncol = ts_len);
+			rownames(data_ts) = subs;
 			for (sub_name in subs)
 			{
 				print(sub_name);
@@ -667,9 +667,9 @@ plot_ts <- function(igt_data, best_worst)
 		{
 			for (sg in names(best_worst[[gr]]))
 			{
-				subs = matrix(rownames(best_worst[[gr]][[sg]]));
-				data_ts = matrix(nrow = nrow(subs), ncol = ts_len);
-				rownames(data_ts) = c(subs);
+				subs = rownames(best_worst[[gr]][[sg]]);
+				data_ts = matrix(nrow = length(subs), ncol = ts_len);
+				rownames(data_ts) = subs;
 				for (sub_name in subs)
 				{
 					data_ts[sub_name, ] = calc_good_bad(igt_data[sub_name, ], metric);
