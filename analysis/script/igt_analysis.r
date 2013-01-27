@@ -1109,7 +1109,8 @@ decision_strategy_analysis <- function(igt_path, sub_path = '', metric = 'outcom
 	best_worst = get_best_worst_block_score(score, rand_score = random_score);
 	dat = rbind(dat, random_subjects);
 	plot_ts(dat, best_worst);
-	save.image(paste(BASE_PATH, "image.dat", sep = "/"));
+	save(file = paste(BASE_PATH, "image.dat", sep = "/"), 
+		 list = ls());
 	rm(list = ls());
 }
 
