@@ -6,6 +6,7 @@ library('dtw');
 library('WRS');		# Wilcox Robust Methods
 library('coin');	# Kruskal-Walls test
 source('./Friedman-Test-with-Post-Hoc.r');
+BASE_PATH <<- '/tmp';
 load_exec_data <- function(igt_result_dir)
 {
 	if (file.exists(paste(igt_result_dir, "all.dat", sep = "/")))
@@ -222,7 +223,8 @@ get_best_worst_block_score <- function(score, clus_cols, rand_score = NA)
 			}
 			else
 			{
-				key = paste("other", clus_ind, sep = "_");
+			#	key = paste("other", clus_ind, sep = "_");
+				key = "random";
 			}
 			ret_val[[gr]][[key]] = curr_score[curr_clus[[clus_ind]], ];
 		}
@@ -626,14 +628,19 @@ plot_ts <- function(igt_data, best_worst)
 	ts_len = 101;   # trial length
 	for (gr in groups)
 	{
-		for (sg in names(best_worst[[gr]]))
+		for (sg in sort(names(best_worst[[gr]])))
 		{
 			subs = rownames(best_worst[[gr]][[sg]]);
 			data_ts = matrix(nrow = length(subs), ncol = ts_len);
 			rownames(data_ts) = subs;
 			for (sub_name in subs)
 			{
-				print(sub_name);
+				if (!(sub_name %in% rownames(data_ts)))
+				{
+					print(rownames(igt_data));
+					print(rownames(data_ts));
+					print(sub_name);
+				}
 				data_ts[sub_name, ] = calc_acc_reward(igt_data[sub_name, ]);
 			}
 			matplot(t(data_ts), type = 'o', pch = 1:nrow(data_ts),
@@ -665,7 +672,7 @@ plot_ts <- function(igt_data, best_worst)
 
 		for (gr in groups)
 		{
-			for (sg in names(best_worst[[gr]]))
+			for (sg in sort(names(best_worst[[gr]])))
 			{
 				subs = rownames(best_worst[[gr]][[sg]]);
 				data_ts = matrix(nrow = length(subs), ncol = ts_len);
@@ -1114,14 +1121,85 @@ decision_strategy_analysis <- function(igt_path, sub_path = '', metric = 'outcom
 	rm(list = ls());
 }
 
-runner <- function(FUN, igt_path, metric = 'outcome', result_base_path = "/tmp", num_of_run = 30)
+runner <- function(FUN, igt_path, metric = 'outcome', result_base_path = "/tmp", num_of_run = 30, run_it = TRUE)
 {
+	if (run_it)
+	{
+		for (run in seq(num_of_run))
+		{
+			print(sprintf("-=:: Run %02d ::=.", run));
+			BASE_PATH <<- sprintf("%s/run_%02d", result_base_path, run);
+			print(BASE_PATH);
+			dir.create(BASE_PATH);
+			FUN(igt_path = igt_path, metric = metric)
+		}
+	}
+
+	num_of_group = 3;
+	cluster_per_group = 3;
+	run_result = array(0, dim = c(num_of_run, num_of_group, cluster_per_group),
+						 dimnames = list(NULL, c("pen", "web", "com"), c('best', 'worst', 'random')));
+
+	random_salted_result = array(0, dim = c(num_of_run, num_of_group, cluster_per_group),
+						 dimnames = list(NULL, c("pen", "web", "com"), c('best', 'worst', 'random')));
 	for (run in seq(num_of_run))
 	{
-		print(sprintf("-=:: Run %02d ::=.", run));
-		BASE_PATH <<- sprintf("%s/run_%02d", result_base_path, run);
-		print(BASE_PATH);
-		dir.create(BASE_PATH);
-		FUN(igt_path = igt_path, metric = metric)
+		zz = new.env();
+		load(sprintf("%s/run_%02d/image.dat", result_base_path, run), 
+			 envir = zz);
+		best_worst = get("best_worst", envir = zz);
+		for (gr in names(best_worst))
+		{
+			total_sub_in_gr = 0;
+			for (sg in sort(names(best_worst[[gr]])))
+			{
+				subs = rownames(best_worst[[gr]][[sg]]);
+				sub_ind = grep("rand_*", subs, invert = T); # remove random subjects
+				random_sub_ind = grep("rand_*", subs); 		# get list of random subjects
+				best_worst[[gr]][[sg]] = best_worst[[gr]][[sg]][sub_ind, ];
+				
+				num_in_sg = dim(best_worst[[gr]][[sg]])[1];
+				total_sub_in_gr = total_sub_in_gr + num_in_sg;
+				
+				if (sg %in% c("best", "worst"))
+				{
+					print(sprintf("run %d, group: %s,  num of %s: %d", run, gr, sg, num_in_sg)); 
+					run_result[run, gr, sg] = num_in_sg;
+					print(sprintf("run %d, group: %s,  num of random in %s: %d", run, gr, sg, length(random_sub_ind))); 
+					random_salted_result[run, gr, sg] = length(random_sub_ind);
+				}
+			} # sub group, best , worst
+		#	print(sprintf("total sub in %s: %d", gr, total_sub_in_gr));
+			run_result[run, gr, ] = run_result[run, gr, ] / total_sub_in_gr;
+			random_salted_result[run, gr, ] = random_salted_result[run, gr, ] / 30;
+		} # group
+	} # run
+
+	sub_group = "best"
+	df_com = matrix(run_result[, "com", sub_group], ncol = 1);
+	df_pen = matrix(run_result[, "pen", sub_group], ncol = 1);
+	df_web = matrix(run_result[, "web", sub_group], ncol = 1);
+
+	dfr_com = matrix(random_salted_result[, "com", sub_group], ncol = 1);
+	dfr_pen = matrix(random_salted_result[, "pen", sub_group], ncol = 1);
+	dfr_web = matrix(random_salted_result[, "web", sub_group], ncol = 1);
+
+	df_pre = cbind(df_com, df_pen, df_web);
+	dfr_pre = cbind(dfr_com, dfr_pen, dfr_web);
+	sig_tr = 0.05;
+	df_frame = data.frame(Value = c(t(df_pre)), Group = factor(rep(c('com', 'pen', 'web'), num_of_run)), 
+						  Runs = factor(rep(seq(num_of_run), each = 3)));
+	dfr_frame = data.frame(Value = c(t(dfr_pre)), Group = factor(rep(c('com', 'pen', 'web'), num_of_run)), 
+						  Runs = factor(rep(seq(num_of_run), each = 3)));
+	print("Friedman Test, Person per Cluster");
+	friedman_result = friedman.test.with.post.hoc(Value ~ Group | Runs, data = df_frame, signif.P = sig_tr); 
+	print("Friedman Test, Random per Cluster");
+	friedman_result = friedman.test.with.post.hoc(Value ~ Group | Runs, data = dfr_frame, signif.P = sig_tr); 
+	if ("PostHoc.Test" %in% names(friedman_result))
+	{
+		print(friedman_result);
 	}
+
+
+	return(list("df_fram" = df_frame, "run_result" = run_result));
 }
