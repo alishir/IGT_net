@@ -186,6 +186,14 @@ get_best_worst_block_score <- function(score, clus_cols, rand_score = NA)
 	nb = dim(score$pen)[2];
 	groups = c('com', 'web', 'pen');
 	num_of_clusters = 3;
+	if (is.na(rand_score))		# if there is no random subjects
+	{
+		num_of_clusters = 2;
+	}
+	else
+	{
+		num_of_clusters = 3;
+	}
 	for (gr in groups)
 	{
 		curr_score = score[[gr]];
@@ -195,7 +203,7 @@ get_best_worst_block_score <- function(score, clus_cols, rand_score = NA)
 		}
 		curr_mean_score = apply(curr_score, 2, mean);
 		curr_sd = apply(curr_score, 2, sd);
-		curr_clus = within_group_cluster(curr_score, num_of_clusters = 3, clus_cols);
+		curr_clus = within_group_cluster(curr_score, num_of_clusters = num_of_clusters, clus_cols);
 
 		curr_clus_medians = apply(curr_score[curr_clus[[1]], ], 2, median);
 		curr_clus_sd = apply(curr_score[curr_clus[[1]], ], 2, sd);
@@ -354,7 +362,7 @@ calc_acc_reward <- function(trial_choice)
 	acc_rew = matrix(nrow = 1, ncol = len + 1);
 	ind = matrix(c(1,1,1,1), nrow = 4, ncol = 1);
 	acc_rew[1,1] = 2000;  # initial deposit!
-	for (i in seq(1,len))
+	for (i in seq(len))
 	{
 		ch = trial_choice[i] - 96;  # deck A is 97, convert to matrix index
 		pin = ind[ch, 1];       # punishment index
@@ -615,41 +623,46 @@ plot_ts <- function(igt_data, best_worst)
 {
 	num_of_groups = length(names(best_worst));
 	num_of_clusters_per_group = length(names(best_worst[[names(best_worst)[1]]]));
-	### PLOT Time Series ####
-	ratio = 2;
-	png(paste(BASE_PATH, 'acc_reward.png', sep = "/"), 
-		width = 1360 * ratio, height = 768 * ratio);
-	attach(mtcars);
-	# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
-	layout(matrix(seq(num_of_clusters_per_group * num_of_groups), 
-				  nrow = num_of_clusters_per_group, ncol = num_of_groups, byrow = FALSE));
 
-	groups = names(best_worst);
-	ts_len = 101;   # trial length
-	for (gr in groups)
-	{
-		for (sg in sort(names(best_worst[[gr]])))
-		{
-			subs = rownames(best_worst[[gr]][[sg]]);
-			data_ts = matrix(nrow = length(subs), ncol = ts_len);
-			rownames(data_ts) = subs;
-			for (sub_name in subs)
-			{
-				if (!(sub_name %in% rownames(data_ts)))
-				{
-					print(rownames(igt_data));
-					print(rownames(data_ts));
-					print(sub_name);
-				}
-				data_ts[sub_name, ] = calc_acc_reward(igt_data[sub_name, ]);
-			}
-			matplot(t(data_ts), type = 'o', pch = 1:nrow(data_ts),
-					col = 1:nrow(data_ts), bg = 1:nrow(data_ts), main = paste(gr, sg, sep = "_"), 
-					lwd = 3, cex.axis = 3, cex.main = 3);
-			legend('topleft', rownames(data_ts), fill = 1:nrow(data_ts), cex = 3, ncol = 3);
-		}
-	}
-	dev.off();
+ 	groups = names(best_worst);
+ 	ts_len = 101;   # trial length
+# 	### PLOT Time Series ####
+# 	ratio = 2;
+# 	png(paste(BASE_PATH, 'acc_reward.png', sep = "/"), 
+# 		width = 1360 * ratio, height = 768 * ratio);
+# 	attach(mtcars);
+# 	# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
+# 	layout(matrix(seq(num_of_clusters_per_group * num_of_groups), 
+# 				  nrow = num_of_clusters_per_group, ncol = num_of_groups, byrow = FALSE));
+# 
+# 	for (gr in groups)
+# 	{
+# 		for (sg in sort(names(best_worst[[gr]])))
+# 		{
+# 			subs = rownames(best_worst[[gr]][[sg]]);
+# 			data_ts = matrix(nrow = length(subs), ncol = ts_len);
+# 			rownames(data_ts) = subs;
+# 			for (sub_name in subs)
+# 			{
+# 				if (!(sub_name %in% rownames(data_ts)))
+# 				{
+# 					print(rownames(data_ts));
+# 					print(sub_name);
+# 				}
+# 				if (!(sub_name %in% rownames(igt_data)))
+# 				{
+# 					print(rownames(igt_data));
+# 					print(sub_name);
+# 				}
+# 				data_ts[sub_name, ] = calc_acc_reward(igt_data[sub_name, ]);
+# 			}
+# 			matplot(t(data_ts), type = 'o', pch = 1:nrow(data_ts),
+# 					col = 1:nrow(data_ts), bg = 1:nrow(data_ts), main = paste(gr, sg, sep = "_"), 
+# 					lwd = 3, cex.axis = 3, cex.main = 3);
+# 			legend('topleft', rownames(data_ts), fill = 1:nrow(data_ts), cex = 3, ncol = 3);
+# 		}
+# 	}
+# 	dev.off();
 
 
 	### PLOT Good-BadTime Series ####
@@ -1102,7 +1115,7 @@ create_random_subjects <- function(num_subs, prefix = "rand")
 	return(random_subjects);
 }
 
-decision_strategy_analysis <- function(igt_path, sub_path = '', metric = 'outcome')
+decision_strategy_analysis <- function(igt_path, sub_path = '', metric = 'outcome', random_salt = TRUE)
 {
 	dat = load_exec_data(igt_path);
 	group_fname = "sub_exp_map";
@@ -1110,15 +1123,22 @@ decision_strategy_analysis <- function(igt_path, sub_path = '', metric = 'outcom
 
 	score = calc_block_score(sub_data = dat, group_map = sub_exp_map, 
 							 score_type = 'raw', metric = metric);
-	random_subjects = create_random_subjects(30);
-	random_score = calc_block_score(sub_data = random_subjects);
 
-	best_worst = get_best_worst_block_score(score, rand_score = random_score);
-	dat = rbind(dat, random_subjects);
+	if (random_salt)
+	{
+		random_subjects = create_random_subjects(30);
+		random_score = calc_block_score(sub_data = random_subjects);
+
+		best_worst = get_best_worst_block_score(score, rand_score = random_score);
+		dat = rbind(dat, random_subjects);
+	}
+	else
+	{
+		best_worst = get_best_worst_block_score(score);
+	}
 	plot_ts(dat, best_worst);
 	save(file = paste(BASE_PATH, "image.dat", sep = "/"), 
 		 list = ls());
-	rm(list = ls());
 }
 
 runner <- function(FUN, igt_path, metric = 'outcome', result_base_path = "/tmp", num_of_run = 30, run_it = TRUE)
@@ -1130,7 +1150,7 @@ runner <- function(FUN, igt_path, metric = 'outcome', result_base_path = "/tmp",
 			print(sprintf("-=:: Run %02d ::=.", run));
 			BASE_PATH <<- sprintf("%s/run_%02d", result_base_path, run);
 			print(BASE_PATH);
-			dir.create(BASE_PATH);
+			dir.create(BASE_PATH, recursive = TRUE);
 			FUN(igt_path = igt_path, metric = metric)
 		}
 	}
@@ -1175,31 +1195,33 @@ runner <- function(FUN, igt_path, metric = 'outcome', result_base_path = "/tmp",
 		} # group
 	} # run
 
-	sub_group = "best"
-	df_com = matrix(run_result[, "com", sub_group], ncol = 1);
-	df_pen = matrix(run_result[, "pen", sub_group], ncol = 1);
-	df_web = matrix(run_result[, "web", sub_group], ncol = 1);
-
-	dfr_com = matrix(random_salted_result[, "com", sub_group], ncol = 1);
-	dfr_pen = matrix(random_salted_result[, "pen", sub_group], ncol = 1);
-	dfr_web = matrix(random_salted_result[, "web", sub_group], ncol = 1);
-
-	df_pre = cbind(df_com, df_pen, df_web);
-	dfr_pre = cbind(dfr_com, dfr_pen, dfr_web);
-	sig_tr = 0.05;
-	df_frame = data.frame(Value = c(t(df_pre)), Group = factor(rep(c('com', 'pen', 'web'), num_of_run)), 
-						  Runs = factor(rep(seq(num_of_run), each = 3)));
-	dfr_frame = data.frame(Value = c(t(dfr_pre)), Group = factor(rep(c('com', 'pen', 'web'), num_of_run)), 
-						  Runs = factor(rep(seq(num_of_run), each = 3)));
-	print("Friedman Test, Person per Cluster");
-	friedman_result = friedman.test.with.post.hoc(Value ~ Group | Runs, data = df_frame, signif.P = sig_tr); 
-	print("Friedman Test, Random per Cluster");
-	friedman_result = friedman.test.with.post.hoc(Value ~ Group | Runs, data = dfr_frame, signif.P = sig_tr); 
-	if ("PostHoc.Test" %in% names(friedman_result))
+	for (sub_group in c("best", "worst"))
 	{
-		print(friedman_result);
-	}
+		print(sprintf("Stat Test in SubGroup: %s", sub_group));
+		df_com = matrix(run_result[, "com", sub_group], ncol = 1);
+		df_pen = matrix(run_result[, "pen", sub_group], ncol = 1);
+		df_web = matrix(run_result[, "web", sub_group], ncol = 1);
 
+		dfr_com = matrix(random_salted_result[, "com", sub_group], ncol = 1);
+		dfr_pen = matrix(random_salted_result[, "pen", sub_group], ncol = 1);
+		dfr_web = matrix(random_salted_result[, "web", sub_group], ncol = 1);
+
+		df_pre = cbind(df_com, df_pen, df_web);
+		dfr_pre = cbind(dfr_com, dfr_pen, dfr_web);
+		sig_tr = 0.05;
+		df_frame = data.frame(Value = c(t(df_pre)), Group = factor(rep(c('com', 'pen', 'web'), num_of_run)), 
+							  Runs = factor(rep(seq(num_of_run), each = 3)));
+		dfr_frame = data.frame(Value = c(t(dfr_pre)), Group = factor(rep(c('com', 'pen', 'web'), num_of_run)), 
+							   Runs = factor(rep(seq(num_of_run), each = 3)));
+		print("Friedman Test, Person per Cluster");
+		friedman_result = friedman.test.with.post.hoc(Value ~ Group | Runs, data = df_frame, signif.P = sig_tr); 
+		print("Friedman Test, Random per Cluster");
+		friedman_result = friedman.test.with.post.hoc(Value ~ Group | Runs, data = dfr_frame, signif.P = sig_tr); 
+		if ("PostHoc.Test" %in% names(friedman_result))
+		{
+			print(friedman_result);
+		}
+	}
 
 	return(list("df_fram" = df_frame, "run_result" = run_result));
 }
