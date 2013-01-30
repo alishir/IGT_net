@@ -1,0 +1,50 @@
+Introduction:
+framing effect is a cognitive bias that affects human decision making.
+Iowa gamblign task(IGT) was created to assess human decision making in
+labratorary.  significance difference in subjects performance observed
+when subjecs play different representation of IGT. the previous
+results show that the participants' performance in the computerized
+gambling task is significantly lower compared to playing with real
+cards.  Providing the participants with pen and paper drastically
+intensifies the performance drop to random decision making level.  by
+designing an other variation of IGT we study the effect of human
+computer interaction on participants performance.
+
+
+Method:
+in the privouse study participants play three different IGT with same
+gain/loss function. these three variation are: real card IGT (R-IGT),
+computer based IGT(CB-IGT) and computer based IGT that participants
+provied with pen and paper(CBPP-IGT). we disign an other variation of
+IGT(WR-IGT), that participants play real card game with computer. IGT
+decks and participants are in seperated rooms. the IGT decks is shown
+to participats via a camera and participats select decks via keyboard.
+after participat select a deck, experimenter in other room informed
+from that selection and evert top card of the selected deck.
+experimenter keep it evert for 3 seconds and then remove card from
+selected deck and participat continue playing.
+
+101 participats play four variation of IGT.
+
+In order to remove subjects who play game randomly, we add some random
+generated behavior to each game variation and cluster data in that
+game variation. after clustering, subject with best performance
+selected from that variation.
+
+after random subject elimination, we calculate distance between WR-IGT
+and other variation to find the most similar variation to WR-IGT.
+
+
+Results:
+after random subject elimination, Bhattacharyya distance is used to
+measure similarity between WR-IGT and other three variants. the most
+similar game variant to WR-IGT was R-IGT (0.01621746), the next most similar was
+CB-IGT(0.1113272) and CBPP-IGT(0.3416822) is the most disimilar one.
+
+
+Conclution:
+in the present study, we found that participats performance in playing
+IGT with real cards are similar in both variations (R-IGT and WR-IGT)
+but differ from other vriations. it indicates that computer human
+interaction is not the source of difference that observed in prevoise
+study.

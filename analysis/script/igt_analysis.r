@@ -13,7 +13,10 @@ load_exec_data <- function(igt_result_dir)
 	{
 		da = read.octave(paste(igt_result_dir, "all.dat", sep = "/"));
 		sub_deck_selection = da$b;
-		rownames(sub_deck_selection) = seq(1,nrow(sub_deck_selection));
+		rownames(sub_deck_selection) = as.vector(lapply(seq(nrow(sub_deck_selection)), 
+														function(x){
+															sprintf("%d", x);
+														}));
 		return (sub_deck_selection);
 	}
 	sub_list = list.files(igt_result_dir, pattern = "*.dat$");
@@ -1176,6 +1179,8 @@ runner <- function(FUN, igt_path, metric = 'outcome', result_base_path = "/tmp",
 				subs = rownames(best_worst[[gr]][[sg]]);
 				sub_ind = grep("rand_*", subs, invert = T); # remove random subjects
 				random_sub_ind = grep("rand_*", subs); 		# get list of random subjects
+				# TODO, debug this partition
+				# sub_ind or sub[sub_ind] ???
 				best_worst[[gr]][[sg]] = best_worst[[gr]][[sg]][sub_ind, ];
 				
 				num_in_sg = dim(best_worst[[gr]][[sg]])[1];
