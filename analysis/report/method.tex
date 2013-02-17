@@ -3,45 +3,46 @@
 \usepackage{subfig}
 \usepackage{hyperref}
 
+\usepackage{fancyhdr}
 \usepackage{eso-pic}
 \usepackage{fontspec}
 \newfontfamily\rmfamily[Mapping=tex-text]{Yas}
 \usepackage[RTLdocument]{bidi}
-\usepackage{fancyhdr}
 
 
 
-\pagestyle{fancy}
+
+%\pagestyle{fancy}
 %\textheight 20cm
 
 \usepackage{xepersian}
-\setdigitfont[Scale=1]{Yas}
+%\setdigitfont[Scale=1]{Yas}
 \setmainfont[Script=Arabic,Mapping=farsidigits]{Yas}
 \setlatintextfont{Yas}
 \settextfont{Yas}
 
 
 %\oddsidemargin 0cm
-\topmargin -0.5cm
-\headsep 3cm
-
-\chead
-{
-بسمه تعالی \\
-\vspace{.5cm}
-\textbf{شبکه‌های اجتماعی} \\
-\vspace{.3cm}
-تمرین شماره 2 \\
-}
-\rhead
-{
- \includegraphics[scale=.1]{./logo/ut_logo.png}
-}
-
-\lhead
-{
-\includegraphics[scale=.1]{./logo/fanni_logo.jpg}
-}
+%\topmargin -0.5cm
+%\headsep 3cm
+%
+%\chead
+%{
+%بسمه تعالی \\
+%\vspace{.5cm}
+%\textbf{شبکه‌های اجتماعی} \\
+%\vspace{.3cm}
+%تمرین شماره 2 \\
+%}
+%\rhead
+%{
+% \includegraphics[scale=.1]{./logo/ut_logo.png}
+%}
+%
+%\lhead
+%{
+%\includegraphics[scale=.1]{./logo/fanni_logo.jpg}
+%}
 
 \begin{document}
 \section{روش}
@@ -63,13 +64,64 @@
 همانطور که قبلا گفته شد، در این بازی، چند ویژگی برای دسته کارت‌ها وجود دارد. این ویژگی‌ها عبارت‌اند از :
 \begin{itemize}
  \item نتیجه طولانی مدت
-\item تکرار پاداش‌ها
-\item تکرار خسران‌ها
+\item تکرار پاداش‌
+\item تکرار خسران‌
 \end{itemize}
 
 هنگامی که از منظر نتیجه طولانی مدت کارآیی افراد را مورد ارزیابی قرار می‌دهیم،
   این نکته که افرادی که قلم و کاغذ در اختیار داشته‌اند
 در سطح رندم رفتار کرده‌اند جلب توجه می‌کند.
+
+
+\section{نتایج}
+پس از ۳۰ بار اجرای روش گفته شده، تعداد افراد رندم که در بهترین و بدترین گروه دسته‌بندی شده بودند را بررسی کردیم.
+و از تست فریدمن استفاده کردیم.
+
+نتایج حاصل از منظر ویژگی‌های مختلف به شرح زیر است:
+\subsection{از لحاظ نتیجه طولانی مدت}
+پس از انجام تست مذکور نتایج زیر بدست آمد:
+
+
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{2}{|c|}{گروه‌ها} & پی-مقدار \\
+\hline
+قلم و کاغذ & کامپیوتر 
+& $1.1 \times  10^{-3} $ \\ \hline
+دستی & کامپیوتر 
+& $1.1 \times  10^{-3} $ \\ \hline
+دستی & قلم و کاغذ 
+& $4.6 \times  10^{-12} $ \\
+ \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\subsection{از لحاظ تکرار پاداش}
+نتایج تست، تفاوت قابل توجهی را نشان نمی‌دادند.
+
+\subsection{از لحاظ تکرار خسران}
+پس از انجام تست مذکور نتایج زیر بدست آمد:
+
+
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{2}{|c|}{گروه‌ها} & پی-مقدار \\
+\hline
+قلم و کاغذ & کامپیوتر 
+& $9.9 \times  10^{-1} $ \\ \hline
+دستی & کامپیوتر 
+& $1.5 \times  10^{-6} $ \\ \hline
+دستی & قلم و کاغذ 
+& $9.6 \times  10^{-7} $ \\
+ \hline
+\end{tabular}
+\end{center}
+\end{table}
 
 
 \end{document}

@@ -5,6 +5,8 @@ library('calibrate');
 library('dtw');
 library('WRS');		# Wilcox Robust Methods
 library('coin');	# Kruskal-Walls test
+library('Hmisc');
+source('./add_new_sub.r');
 source('./Friedman-Test-with-Post-Hoc.r');
 BASE_PATH <<- '/tmp';
 load_exec_data <- function(igt_result_dir)
@@ -1139,9 +1141,94 @@ decision_strategy_analysis <- function(igt_path, sub_path = '', metric = 'outcom
 	{
 		best_worst = get_best_worst_block_score(score);
 	}
+	
 	plot_ts(dat, best_worst);
+	if (nchar(sub_path) > 0)
+	{
+	#	sink('./personality_corr.txt');
+		sub_mat = load_subjects(sub_path);
+		corr_analysis(best_worst, sub_mat);
+		sink();
+	}
 	save(file = paste(BASE_PATH, "image.dat", sep = "/"), 
 		 list = ls());
+}
+
+corr_analysis <- function(best_worst, sub_mat)
+{
+	# find the cluster which majority of subjects blongs to
+	gr_max = list();
+	nb = dim(best_worst[["com"]][["best"]])[2];
+	sub_in_gr = list();
+	for (gr in names(best_worst))
+	{
+		max_sub_in_sg = -1;
+		max_sg = 'none';
+		sub_in_gr[[gr]] = c();		# list of subjects in group gr
+		for (sg in sort(names(best_worst[[gr]])))
+		{
+			subs = rownames(best_worst[[gr]][[sg]]);
+			sub_ind = grep("rand_*", subs, invert = T); # remove random subjects
+			subs_in_sg = subs[sub_ind];
+
+			sub_in_gr[[gr]] = append(sub_in_gr[[gr]], subs_in_sg);
+
+			if (length(sub_ind) > max_sub_in_sg)
+			{
+				max_sub_in_sg = length(sub_ind);
+				max_sg = sg;
+			}
+		}
+		gr_max[[gr]] = max_sg;
+	}
+
+	ratio = 1;
+	png(paste(BASE_PATH, sprintf('personality.png') , sep = "/"),
+		width = 1360 * ratio, height = 768 * ratio);
+	plot(-10, -10, xlim = c(1, 10), ylim = c(0, 1), xlab = "BAS --- BIS");
+	
+	index = 2;
+	bas_bis_pos = 5;
+	for (gr in names(best_worst))
+	{
+		max_sg = gr_max[[gr]];
+		nb = dim(best_worst[[gr]][[max_sg]])[2];
+		subs_in_max = rownames(best_worst[[gr]][[max_sg]]);
+		sub_ind = grep("rand_*", subs_in_max, invert = T); # remove random subjects
+		subs_in_max = subs_in_max[sub_ind];
+		subs_bas = sub_mat[subs_in_max, "bas"];
+		subs_bis = sub_mat[subs_in_max, "bis"];
+
+		total_sub_bas = sub_mat[sub_in_gr[[gr]], "bas"];
+		total_sub_bis = sub_mat[sub_in_gr[[gr]], "bis"];
+
+		bas_bis_b = list(total_sub_bas, total_sub_bis);
+		bas_bis_p = c(index, index + bas_bis_pos);
+		boxplot(bas_bis_b, at = bas_bis_p,
+				col = index, boxwex = 0.4, main = "Personality Difference", add = T);
+		
+		bas_bis_b = list(subs_bas, subs_bis);
+		boxplot(bas_bis_b, at = bas_bis_p + 0.5,
+				col = index, boxwex = 0.4, main = "Personality Difference", add = T);
+
+		index = index + 1;
+
+		curr_score = best_worst[[gr]][[max_sg]][subs_in_max, ];
+		learned_portion = curr_score[, ceiling((0.41) * nb):nb];
+		sum_learned_portion = apply(learned_portion, 1, sum);
+
+		if (length(subs_in_max) > 5)
+		{
+			rcorr(subs_bas, sum_learned_portion);
+			rcorr(subs_bis, sum_learned_portion);
+		}
+		else
+		{
+			print(sprintf("not enough sub in group: gr: %s, sg: %s", gr, max_sg));
+		}
+	}
+	legend("bottomright", names(best_worst), fill = 2:5, cex = 3);
+	dev.off();
 }
 
 runner <- function(FUN, igt_path, metric = 'outcome', result_base_path = "/tmp", num_of_run = 30, run_it = TRUE)
@@ -1181,11 +1268,19 @@ runner <- function(FUN, igt_path, metric = 'outcome', result_base_path = "/tmp",
 				random_sub_ind = grep("rand_*", subs); 		# get list of random subjects
 				# TODO, debug this partition
 				# sub_ind or sub[sub_ind] ???
-				best_worst[[gr]][[sg]] = best_worst[[gr]][[sg]][sub_ind, ];
-				
-				num_in_sg = dim(best_worst[[gr]][[sg]])[1];
+				if (length(sub_ind) > 1)
+				{
+					best_worst[[gr]][[sg]] = best_worst[[gr]][[sg]][sub_ind, ];
+					num_in_sg = dim(best_worst[[gr]][[sg]])[1];
+				}
+				else if (length(sub_ind) == 1)		# becuase of dim problem with one entry
+				{
+					best_worst[[gr]][[sg]] = best_worst[[gr]][[sg]][sub_ind, ];
+					num_in_sg = 1;
+				}
+
 				total_sub_in_gr = total_sub_in_gr + num_in_sg;
-				
+
 				if (sg %in% c("best", "worst"))
 				{
 					print(sprintf("run %d, group: %s,  num of %s: %d", run, gr, sg, num_in_sg)); 
@@ -1194,12 +1289,13 @@ runner <- function(FUN, igt_path, metric = 'outcome', result_base_path = "/tmp",
 					random_salted_result[run, gr, sg] = length(random_sub_ind);
 				}
 			} # sub group, best , worst
-		#	print(sprintf("total sub in %s: %d", gr, total_sub_in_gr));
+			#	print(sprintf("total sub in %s: %d", gr, total_sub_in_gr));
 			run_result[run, gr, ] = run_result[run, gr, ] / total_sub_in_gr;
 			random_salted_result[run, gr, ] = random_salted_result[run, gr, ] / 30;
 		} # group
 	} # run
 
+	sink(sprintf('%s/random_friedman.txt', result_base_path));
 	for (sub_group in c("best", "worst"))
 	{
 		print(sprintf("Stat Test in SubGroup: %s", sub_group));
@@ -1207,9 +1303,40 @@ runner <- function(FUN, igt_path, metric = 'outcome', result_base_path = "/tmp",
 		df_pen = matrix(run_result[, "pen", sub_group], ncol = 1);
 		df_web = matrix(run_result[, "web", sub_group], ncol = 1);
 
+		ratio = 1;
+		png(paste(result_base_path, sprintf('runner_hist_%s.png', sub_group), sep = "/"),
+			width = 1360 * ratio, height = 768 * ratio);
+#		x11();
+#		par(ask = T);
+		ratio = 1;
+		breaks = seq(0, 1, by = 0.2);
+		nclass = length(breaks);
+		p1 = hist(df_com, plot = F, nclass = nclass, breaks = breaks);
+		p2 = hist(df_pen, plot = F, nclass = nclass, breaks = breaks);
+		p3 = hist(df_web, plot = F, nclass = nclass, breaks = breaks);
+		plot(p1, col = rgb(0,0,1,1/4), xlim = c(0,1));  # first histogram
+		plot(p2, col = rgb(1,0,0,1/4), xlim = c(0,1), add = T);  # second
+		plot(p3, col = rgb(0,1,0,1/4), xlim = c(0,1), add = T);  # and the last ...
+
+		dev.off();
+
 		dfr_com = matrix(random_salted_result[, "com", sub_group], ncol = 1);
 		dfr_pen = matrix(random_salted_result[, "pen", sub_group], ncol = 1);
 		dfr_web = matrix(random_salted_result[, "web", sub_group], ncol = 1);
+
+		png(paste(result_base_path, sprintf('random_runner_hist_%s.png', sub_group), sep = "/"),
+			width = 1360 * ratio, height = 768 * ratio);
+		
+#		x11();
+#		par(ask = T);
+		p1 = hist(dfr_com, plot = F, nclass = nclass, breaks = breaks);
+		p2 = hist(dfr_pen, plot = F, nclass = nclass, breaks = breaks);
+		p3 = hist(dfr_web, plot = F, nclass = nclass, breaks = breaks);
+		plot(p1, col = rgb(0,0,1,1/4), xlim = c(0,1));  # first histogram
+		plot(p2, col = rgb(1,0,0,1/4), xlim = c(0,1), add = T);  # second
+		plot(p3, col = rgb(0,1,0,1/4), xlim = c(0,1), add = T);  # second
+
+		dev.off();
 
 		df_pre = cbind(df_com, df_pen, df_web);
 		dfr_pre = cbind(dfr_com, dfr_pen, dfr_web);
@@ -1218,15 +1345,20 @@ runner <- function(FUN, igt_path, metric = 'outcome', result_base_path = "/tmp",
 							  Runs = factor(rep(seq(num_of_run), each = 3)));
 		dfr_frame = data.frame(Value = c(t(dfr_pre)), Group = factor(rep(c('com', 'pen', 'web'), num_of_run)), 
 							   Runs = factor(rep(seq(num_of_run), each = 3)));
-		print("Friedman Test, Person per Cluster");
+		print("Friedman Test, PERSON per Cluster");
 		friedman_result = friedman.test.with.post.hoc(Value ~ Group | Runs, data = df_frame, signif.P = sig_tr); 
-		print("Friedman Test, Random per Cluster");
+		if ("PostHoc.Test" %in% names(friedman_result))
+		{
+			print(friedman_result);
+		}
+		print("Friedman Test, RANDOM per Cluster");
 		friedman_result = friedman.test.with.post.hoc(Value ~ Group | Runs, data = dfr_frame, signif.P = sig_tr); 
 		if ("PostHoc.Test" %in% names(friedman_result))
 		{
 			print(friedman_result);
 		}
 	}
+	sink();
 
-	return(list("df_fram" = df_frame, "run_result" = run_result));
+	return(list("df_frame" = df_frame, "dfr_frame" = dfr_frame));
 }

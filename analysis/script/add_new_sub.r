@@ -85,7 +85,7 @@ calc_bas_bis_score <- function(sub_bas_bis)
 	return(return_score);
 }
 
-load_subjects <- function(sub_dir)
+load_subjects <- function(sub_dir, rescale = T)
 {
 	sub_list = list.files(sub_dir, pattern = "*.sub$");
 	sub_size = length(sub_list);
@@ -100,13 +100,26 @@ load_subjects <- function(sub_dir)
 		load(paste(sub_dir, i, sep="/"));
 		id = substr(i, 1, nchar(i) - 4);
 		sub_mat[id, "sex"] = as.numeric(sex_map[sub_sex]);
-		sub_mat[id, "bas"] = as.numeric(sub_bas_bis_score["bas_score_norm"]);
-		sub_mat[id, "bas_rr"] = (as.numeric(sub_bas_bis_score["bas_rr_score"]) - 5) / (20 - 5);
-		sub_mat[id, "bas_fs"] = (as.numeric(sub_bas_bis_score["bas_fs_score"]) - 4) / (16 - 4);
-		sub_mat[id, "bas_d"] = (as.numeric(sub_bas_bis_score["bas_d_score"]) - 4) / (16 - 4);
-		sub_mat[id, "bis"] = as.numeric(sub_bas_bis_score["bis_score_norm"]);
-		sub_mat[id, "pnas_p"] = (as.numeric(sub_pnas_score["pnas_pos_score"]) - 10) / (50 - 10);
-		sub_mat[id, "pnas_n"] = (as.numeric(sub_pnas_score["pnas_neg_score"]) - 10) / (50 - 10);
+		if (rescale)
+		{
+			sub_mat[id, "bas"] = as.numeric(sub_bas_bis_score["bas_score_norm"]);
+			sub_mat[id, "bas_rr"] = (as.numeric(sub_bas_bis_score["bas_rr_score"]) - 5) / (20 - 5);
+			sub_mat[id, "bas_fs"] = (as.numeric(sub_bas_bis_score["bas_fs_score"]) - 4) / (16 - 4);
+			sub_mat[id, "bas_d"] = (as.numeric(sub_bas_bis_score["bas_d_score"]) - 4) / (16 - 4);
+			sub_mat[id, "bis"] = as.numeric(sub_bas_bis_score["bis_score_norm"]);
+			sub_mat[id, "pnas_p"] = (as.numeric(sub_pnas_score["pnas_pos_score"]) - 10) / (50 - 10);
+			sub_mat[id, "pnas_n"] = (as.numeric(sub_pnas_score["pnas_neg_score"]) - 10) / (50 - 10);
+		}
+		else
+		{
+			sub_mat[id, "bas"] = as.numeric(sub_bas_bis_score["bas_score_norm"]) * (52 - 13) + 13;
+			sub_mat[id, "bas_rr"] = as.numeric(sub_bas_bis_score["bas_rr_score"]);
+			sub_mat[id, "bas_fs"] = as.numeric(sub_bas_bis_score["bas_fs_score"]);
+			sub_mat[id, "bas_d"] = as.numeric(sub_bas_bis_score["bas_d_score"]);
+			sub_mat[id, "bis"] = as.numeric(sub_bas_bis_score["bis_score_norm"]) * (28 - 7) + 7;
+			sub_mat[id, "pnas_p"] = as.numeric(sub_pnas_score["pnas_pos_score"]);
+			sub_mat[id, "pnas_n"] = as.numeric(sub_pnas_score["pnas_neg_score"]);
+		}
 	}
 	return(sub_mat);
 }
