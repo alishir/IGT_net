@@ -48,7 +48,7 @@ function igt_orig(contact, sid, save_path)
 		is_deck_selected = 0;
 	%	show_rewards_bar(wPtr, acc_reward, acc_punish);
 		show_decks(wPtr, decks, shuffle_decks);
-		[selected_deck, resp_time] = get_response();
+		[selected_deck, resp_time] = get_response(response_handle);
 
 		current_reward = 0;
 		current_punish = 0;
@@ -284,17 +284,19 @@ function show_rewards_bar(wPtr, reward_acc, punish_acc)
 end
 
 
-function [selected_deck, resp_time] = get_response(wPtr)
+function [selected_deck, resp_time] = get_response(resp_handle)
 	key_is_down = 0;
-	FlushEvents;
+	IOPort('Purge', resp_handle);
+	TQ = 4;
 	tic
-	while (toc < 3) && (key_is_down == 0)
-		[key_is_down, secs, key_code] = KbCheck;
+	while (toc < TQ) && (key_is_down == 0)
+		[resp_data, when, errmsg] = IOPort('Read', resp_handle, blocking = 0, 1);
 %		selected_deck = KbName(key_code);
 		selected_deck = key_code;
 	end
 	resp_time = clock();
-	while KbCheck; end
+	selected_deck = resp_data(1);
+	IOPort('Purge', resp_handle);
 end
 
 function mark_selected_deck(wPtr, selected_deck, shuffle_decks)

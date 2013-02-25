@@ -8,7 +8,7 @@ library('coin');	# Kruskal-Walls test
 library('Hmisc');
 source('./add_new_sub.r');
 source('./Friedman-Test-with-Post-Hoc.r');
-BASE_PATH <<- '/tmp';
+BASE_PATH <<- paste(getwd(), "tmp", sep = '/');
 load_exec_data <- function(igt_result_dir)
 {
 	if (file.exists(paste(igt_result_dir, "all.dat", sep = "/")))
@@ -1147,7 +1147,7 @@ decision_strategy_analysis <- function(igt_path, sub_path = '', metric = 'outcom
 	{
 	#	sink('./personality_corr.txt');
 		sub_mat = load_subjects(sub_path);
-		corr_analysis(best_worst, sub_mat);
+#		corr_analysis(best_worst, sub_mat);
 		sink();
 	}
 	save(file = paste(BASE_PATH, "image.dat", sep = "/"), 
