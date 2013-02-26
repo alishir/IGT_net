@@ -3,18 +3,19 @@
 function igt_orig(contact, sid, save_path)
 
 	%responsebox initialization
-	resp_config = 'HardwareBufferSizes=1,1 ReceiveTimeout=0.001';
+%	resp_config = 'HardwareBufferSizes=1,1 ReceiveTimeout=0.001';
+	resp_config = 'InputBufferSize=1 ReceiveTimeout=0.001';
 % 	s = serial('COM4');% use device manager to findout com number of usbserial port after pluging the response box
 % 	s.inputbuffersize = 1;
 % 	fopen(s);
 % 	s.timeout = 0.001; %time out is the time that matlab wait for data
-	[response_handle, errmsg] = IOPort('OpenSerialPort', 4, resp_config);
+	[response_handle, errmsg] = IOPort('OpenSerialPort', 'COM4', resp_config);
 
 	% config trigger, it seems cogent function
 %	config_serial(1,4800,0,0,8);
 %	config_serial( port, baudrate, parity, stopbits, bytesize);
 	triger_config = 'BaudRate=4800 StopBits=0 Parity=None DataBits=8';
-	[triger_handle, errmsg] = IOPort('OpenSerialPort', 1, triger_config);
+	[triger_handle, errmsg] = IOPort('OpenSerialPort', 'COM1', triger_config);
 
 	[wPtr, wRect, old_pref] = init_screen();
 
