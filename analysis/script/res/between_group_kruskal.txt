@@ -1,0 +1,138 @@
+[1] "Kruskal Test, Metric: outcome, Block: 1"
+[1] 0.3125111
+99 percent confidence interval:
+ 0.3085358 0.3165063 
+
+                   
+pen - com 0.5278222
+web - com 0.3123000
+web - pen 0.8839111
+[1] "Kruskal Test, Metric: gain, Block: 1"
+[1] 0.002933333
+99 percent confidence interval:
+ 0.002489727 0.003430339 
+
+                     
+pen - com 0.299366667
+web - com 0.002911111
+web - pen 0.116477778
+[1] "++++++ Kruskal +++++++ Metric: gain, Block: 1, groups(web, com)"
+[1] "Kruskal Test, Metric: loss, Block: 1"
+[1] 0.3625333
+99 percent confidence interval:
+ 0.3584075 0.3666737 
+
+                   
+pen - com 0.9995222
+web - com 0.4080000
+web - pen 0.3620444
+[1] "Kruskal Test, Metric: outcome, Block: 2"
+[1] 0.09493333
+99 percent confidence interval:
+ 0.09243247 0.09747714 
+
+                    
+pen - com 0.68421111
+web - com 0.09473333
+web - pen 0.34456667
+[1] "Kruskal Test, Metric: gain, Block: 2"
+[1] 0.7592111
+99 percent confidence interval:
+ 0.7555208 0.7628740 
+
+                   
+pen - com 0.7587111
+web - com 0.8003333
+web - pen 0.9993000
+[1] "Kruskal Test, Metric: loss, Block: 2"
+[1] 0.6910111
+99 percent confidence interval:
+ 0.6870281 0.6949739 
+
+                   
+pen - com 0.9711111
+web - com 0.6904778
+web - pen 0.7928556
+[1] "Kruskal Test, Metric: outcome, Block: 3"
+[1] 0.09177778
+99 percent confidence interval:
+ 0.08931495 0.09428388 
+
+                    
+pen - com 0.32662222
+web - com 0.84123333
+web - pen 0.09163333
+[1] "Kruskal Test, Metric: gain, Block: 3"
+[1] 0.05444444
+99 percent confidence interval:
+ 0.05251437 0.05642180 
+
+                    
+pen - com 0.05432222
+web - com 0.23355556
+web - pen 0.82592222
+[1] "Kruskal Test, Metric: loss, Block: 3"
+[1] 0.06711111
+99 percent confidence interval:
+ 0.06498013 0.06928801 
+
+                    
+pen - com 0.06695556
+web - com 0.29623333
+web - pen 0.78874444
+[1] "Kruskal Test, Metric: outcome, Block: 4"
+[1] 0.002222222
+99 percent confidence interval:
+ 0.001838691 0.002659353 
+
+                     
+pen - com 0.011533333
+web - com 0.925833333
+web - pen 0.002211111
+[1] "++++++ Kruskal +++++++ Metric: outcome, Block: 4, groups(pen, com)"
+[1] "++++++ Kruskal +++++++ Metric: outcome, Block: 4, groups(web, pen)"
+[1] "Kruskal Test, Metric: gain, Block: 4"
+[1] 0.6556778
+99 percent confidence interval:
+ 0.6515844 0.6597547 
+
+                   
+pen - com 0.7672111
+web - com 0.9878111
+web - pen 0.6553000
+[1] "Kruskal Test, Metric: loss, Block: 4"
+[1] 0.2658889
+99 percent confidence interval:
+ 0.2621024 0.2697002 
+
+                   
+pen - com 0.2654889
+web - com 0.8108444
+web - pen 0.6249000
+[1] "Kruskal Test, Metric: outcome, Block: 5"
+[1] 0.4767556
+99 percent confidence interval:
+ 0.4724629 0.4810507 
+
+                   
+pen - com 0.6302222
+web - com 0.9777444
+web - pen 0.4763444
+[1] "Kruskal Test, Metric: gain, Block: 5"
+[1] 0.6467
+99 percent confidence interval:
+ 0.6425826 0.6508018 
+
+                   
+pen - com 0.6461889
+web - com 0.8845333
+web - pen 0.9133556
+[1] "Kruskal Test, Metric: loss, Block: 5"
+[1] 0.8461889
+99 percent confidence interval:
+ 0.8430674 0.8492737 
+
+                   
+pen - com 0.9967667
+web - com 0.8457889
+web - pen 0.8615444

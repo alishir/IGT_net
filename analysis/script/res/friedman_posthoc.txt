@@ -1,0 +1,390 @@
+[1] "Group: pen, Cluster best, Block 1\n"
+$Friedman.Test
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 2.8577, p-value = 0.01182
+
+
+$PostHoc.Test
+                         
+loss - gain    0.97729160
+outcome - gain 0.02156879
+outcome - loss 0.01182075
+
+[1] "<Post Hoc Analysis:>"
+[1] "</Post Hoc Analysis:>"
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: pen, Cluster best, Block 2\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 1.633, p-value = 0.2317
+
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: pen, Cluster best, Block 3\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 1.2247, p-value = 0.4385
+
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: pen, Cluster best, Block 4\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 0.4082, p-value = 0.9122
+
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: pen, Cluster best, Block 5\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 2.2454, p-value = 0.06384
+
+[1] "Group: pen, Cluster worst, Block 1\n"
+$Friedman.Test
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 2.8347, p-value = 0.01267
+
+
+$PostHoc.Test
+                         
+loss - gain    0.83770606
+outcome - gain 0.06038838
+outcome - loss 0.01276171
+
+[1] "<Post Hoc Analysis:>"
+[1] "</Post Hoc Analysis:>"
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: pen, Cluster worst, Block 2\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 1.1339, p-value = 0.4932
+
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: pen, Cluster worst, Block 3\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 2.0788, p-value = 0.09428
+
+[1] "Group: pen, Cluster worst, Block 4\n"
+$Friedman.Test
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 2.4568, p-value = 0.03735
+
+
+$PostHoc.Test
+                         
+loss - gain    0.61180055
+outcome - gain 0.28527827
+outcome - loss 0.03738001
+
+[1] "<Post Hoc Analysis:>"
+[1] "</Post Hoc Analysis:>"
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: pen, Cluster worst, Block 5\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 1.8898, p-value = 0.1416
+
+[1] "Group: web, Cluster best, Block 1\n"
+$Friedman.Test
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 3.5301, p-value = 0.001188
+
+
+$PostHoc.Test
+                          
+loss - gain    0.467099513
+outcome - gain 0.048726850
+outcome - loss 0.001241827
+
+[1] "<Post Hoc Analysis:>"
+[1] "</Post Hoc Analysis:>"
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: web, Cluster best, Block 2\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 1.765, p-value = 0.1815
+
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: web, Cluster best, Block 3\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 1.3728, p-value = 0.3552
+
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: web, Cluster best, Block 4\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 1.5689, p-value = 0.2592
+
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: web, Cluster best, Block 5\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 1.9612, p-value = 0.1219
+
+[1] "Group: web, Cluster worst, Block 1\n"
+$Friedman.Test
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 3.8933, p-value = 0.0002988
+
+
+$PostHoc.Test
+                           
+loss - gain    0.3103224729
+outcome - gain 0.0396826389
+outcome - loss 0.0002841756
+
+[1] "<Post Hoc Analysis:>"
+[1] "</Post Hoc Analysis:>"
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: web, Cluster worst, Block 2\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 0.6489, p-value = 0.793
+
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: web, Cluster worst, Block 3\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 1.7844, p-value = 0.1749
+
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: web, Cluster worst, Block 4\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 1.9467, p-value = 0.1258
+
+[1] "Group: web, Cluster worst, Block 5\n"
+$Friedman.Test
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 2.4333, p-value = 0.03959
+
+
+$PostHoc.Test
+                         
+loss - gain    0.59376233
+outcome - gain 0.03962402
+outcome - loss 0.31038845
+
+[1] "<Post Hoc Analysis:>"
+[1] "</Post Hoc Analysis:>"
+[1] "Group: com, Cluster best, Block 1\n"
+$Friedman.Test
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 5.8635, p-value = 1.044e-08
+
+
+$PostHoc.Test
+                           
+loss - gain    3.604770e-02
+outcome - gain 2.010649e-03
+outcome - loss 9.702159e-09
+
+[1] "<Post Hoc Analysis:>"
+[1] "</Post Hoc Analysis:>"
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: com, Cluster best, Block 2\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 0.3086, p-value = 0.9489
+
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: com, Cluster best, Block 3\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 2.3146, p-value = 0.05383
+
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: com, Cluster best, Block 4\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 1.8516, p-value = 0.153
+
+[1] "Group: com, Cluster best, Block 5\n"
+$Friedman.Test
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 3.8576, p-value = 0.0003615
+
+
+$PostHoc.Test
+                           
+loss - gain    0.2061802498
+outcome - gain 0.0003364164
+outcome - loss 0.0781823762
+
+[1] "<Post Hoc Analysis:>"
+[1] "</Post Hoc Analysis:>"
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: com, Cluster worst, Block 1\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 2.0083, p-value = 0.1102
+
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: com, Cluster worst, Block 2\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 2.0083, p-value = 0.1102
+
+[1] "Group: com, Cluster worst, Block 3\n"
+$Friedman.Test
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 2.3735, p-value = 0.04639
+
+
+$PostHoc.Test
+                         
+loss - gain    0.31003970
+outcome - gain 0.04647311
+outcome - loss 0.63214930
+
+[1] "<Post Hoc Analysis:>"
+[1] "</Post Hoc Analysis:>"
+[1] "The results where not significant, There is no need for a post hoc test"
+[1] "Group: com, Cluster worst, Block 4\n"
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 2.0083, p-value = 0.1102
+
+[1] "Group: com, Cluster worst, Block 5\n"
+$Friedman.Test
+
+	Asymptotic General Independence Test
+
+data:  Value by
+	 Group (gain, loss, outcome) 
+	 stratified by Subjects 
+maxT = 2.7386, p-value = 0.01687
+
+
+$PostHoc.Test
+                         
+loss - gain    0.01700797
+outcome - gain 0.07278883
+outcome - loss 0.84764652
+
+[1] "<Post Hoc Analysis:>"
+[1] "</Post Hoc Analysis:>"
