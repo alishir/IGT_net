@@ -1103,7 +1103,7 @@ do_horstmann_analysis <- function(igt_path, sub_path = '')
 							 score_type = 'block', num_of_block = num_of_blocks, metric = 'outcome');
 	best_worst = get_best_worst_block_score(score, num_of_blocks, seq(3, num_of_blocks));
 
-	plot_horstmann_result(hor_a, best_worst, sub_exp_map);
+#	plot_horstmann_result(hor_a, best_worst, sub_exp_map);
 	return(hor_a);
 }
 
