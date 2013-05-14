@@ -372,6 +372,7 @@ calc_acc_reward <- function(trial_choice)
 		ch = trial_choice[i] - 96;  # deck A is 97, convert to matrix index
 		pin = ind[ch, 1];       # punishment index
 		#    print(sprintf("i: %d, pin: %d, ch: %d", i, pin, ch));
+		print(i);
 		acc_rew[1, i + 1] = acc_rew[1, i] + rew_pun$reward[ch, i] - rew_pun$punish[ch, pin];
 		ind[ch, 1] = ind[ch, 1] + 1;
 	}
@@ -901,9 +902,9 @@ plot_horstmann_result <- function(horstmann_result, best_worst, sub_exp_map)
 
 	print("#############################");
 
-	ratio = 2;
+	ratio = 3;
 	png(paste(BASE_PATH, 'horstmann_best_worst.png', sep = "/"),
-		width = 1360 * ratio, height = 768 * ratio);
+		width = 900 * ratio, height = 600 * ratio);
 	attach(mtcars);
 	# par(mfrow = c(2, 4), oma = c(2, 2, 2, 2));	 
 	par(cex = 3, cex.axis = 3, cex.main = 3, cex.lab = 3, mar = c(5,5,5,5) + 1);
@@ -911,12 +912,12 @@ plot_horstmann_result <- function(horstmann_result, best_worst, sub_exp_map)
 
 
 	sink('./friedman_posthoc.txt');
-	for (grp in c('pen', 'web', 'com'))
+	for (grp in c('web', 'com', 'pen'))
 	{
 		for (clus in c('best', 'worst'))
 		{
-			ind_name = paste(grp, clus, sep = '_');		# e.g. pen_worst
-			sub_in = rownames(best_worst[[ind_name]]);		# get subjects in this cluster
+#			ind_name = paste(grp, clus, sep = '_');		# e.g. pen_worst
+			sub_in = rownames(best_worst[[grp]][[clus]]);		# get subjects in this cluster
 
 			curr_data = horstmann_result[sub_in,,];
 			cd_outcome_median = matrix(apply(curr_data[,,'outcome'], 2, median), nrow = 1);
@@ -926,8 +927,13 @@ plot_horstmann_result <- function(horstmann_result, best_worst, sub_exp_map)
 			rownames(cd_gain_median) = c('gain');
 			rownames(cd_loss_median) = c('loss');
 			cd_bind = rbind(cd_outcome_median, cd_gain_median, cd_loss_median);
+
+			main_txt_mapping = list("pen" = "Pen & Paper",
+									"com" = "Computerized",
+									"web" = "Real Cards");
+			
 			matplot(t(cd_bind), type = 'o', pch = 1:3, col = 1:3, bg = 1:3, lwd = 6, 
-						main = ind_name, ylab = "Median Weight", xlab = "Block");
+						main = paste(main_txt_mapping[[grp]], clus, sep = ' '), ylab = "Median Weight", xlab = "Block");
 			# calculate friedman test value for each block
 			for (bk in seq(num_of_blocks))
 			{
@@ -963,7 +969,7 @@ plot_horstmann_result <- function(horstmann_result, best_worst, sub_exp_map)
 					print("</Post Hoc Analysis:>");
 				} # Post Hoc
 			} # block
-			legend('topleft', rownames(cd_bind), pch = 1:3, fill = 1:3, cex = 3);
+			legend('bottomright', rownames(cd_bind), pch = 1:3, fill = 1:3, cex = 3);
 		}
 	} # group
 	sink();
@@ -1098,12 +1104,11 @@ do_horstmann_analysis <- function(igt_path, sub_path = '')
 	num_of_blocks = 5;
 	hor_a = horstmann_analysis(raw_data = dat, sub_exp_map, num_of_blocks);
 
-#	score = calc_block_score(dat, sub_exp_map, num_of_blocks);
 	score = calc_block_score(sub_data = dat, group_map = sub_exp_map, 
 							 score_type = 'block', num_of_block = num_of_blocks, metric = 'outcome');
-	best_worst = get_best_worst_block_score(score, num_of_blocks, seq(3, num_of_blocks));
+	best_worst = get_best_worst_block_score(score, seq(3, num_of_blocks));
 
-#	plot_horstmann_result(hor_a, best_worst, sub_exp_map);
+	plot_horstmann_result(hor_a, best_worst, sub_exp_map);
 	return(hor_a);
 }
 

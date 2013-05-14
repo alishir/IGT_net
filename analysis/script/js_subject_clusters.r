@@ -93,22 +93,23 @@ js_subject_clusters <- function(alpha = 0.3)
 	}
 
 	lon = learn_or_not;
-	png('/tmp/outcome_pen_random.png');
+	png('/tmp/outcome_com_random.png');
 	par(cex.axis = 1.2, cex.lab = 1.2);
-	matplot(t(lon$outcome$pen$random), type = 'l', pch = 1:nrow(lon$outcome$pen$random), lwd=4, ylab = "Performance(Long-term outcome)", xlab = "Trial");
+	matplot(t(lon$outcome$com$random), type = 'l', pch = 1:nrow(lon$outcome$com$random), lwd=4, ylab = "Performance(Long-term outcome)", xlab = "Trial");
 	dev.off();
 
 	png('/tmp/outcome_web_learn.png');
-	matplot(t(lon$outcome$web$learn), type = 'l', pch = 1:nrow(lon$outcome$web$learn), lwd=4, ylab = "Performance(Long-term outcome)", xlab = "Trial");
+	matplot(t(lon$outcome$com$learn), type = 'l', pch = 1:nrow(lon$outcome$com$learn), lwd=4, ylab = "Performance(Long-term outcome)", xlab = "Trial");
 	dev.off();
 
 	png('/tmp/outcome_com_learn.png');
 	matplot(t(lon$outcome$com$learn), type = 'l', pch = 1:nrow(lon$outcome$com$learn), lwd=4, ylab = "Performance(Long-term outcome)", xlab = "Trial");
 	dev.off();
 
-	png('/tmp/gain_pen_learn.png');
-	matplot(t(lon$gain$pen$learn), type = 'l', pch = 1:nrow(lon$gain$pen$learn), lwd=4, ylab = "Performance(Gain frequency)", xlab = "Trial");
+	png('/tmp/outcome_com_unlearn.png');
+	matplot(t(lon$outcome$com$unlearn), type = 'l', pch = 1:nrow(lon$outcome$com$unlearn), lwd=4, ylab = "Performance(Long-term outcome)", xlab = "Trial");
 	dev.off();
+
 
 
 	return(learn_or_not);
