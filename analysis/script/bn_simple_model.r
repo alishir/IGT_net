@@ -95,7 +95,10 @@ bn_analysis <- function() {
 	}
 	# plot bns
 	#	lapply(bns, function(x) {plot(x); par(ask = T) });
-	#	lapply(bns_gr, function(x) {plot(x); par(ask = T) });
+	png("/tmp/bns_gr.png", width = 800, height = 600);
+	layout(matrix(seq(3), nrow = 1, byrow = T));
+	lapply(bns_gr, function(x) {plot(x); par(ask = T) });
+	dev.off();
 
 	############ cluster bn analysis  ############
 	clusters = js_subject_clusters();
@@ -110,14 +113,22 @@ bn_analysis <- function() {
 							 }) 
 						});
 
-	lapply(bns_clust, function(f) {
-		   lapply(f, function(gr) {
-				  lapply(gr, function(bn) {
-						 par(ask = T);
-						 plot(bn);
+	bns_clust_names = names(bns_clust)
+	png("/tmp/bns.png", width = 3000, height = 2000);
+	layout(matrix(seq(28), nrow = 4, byrow = T));
+	par(cex = 1.2, lwd = 1);
+	lapply(bns_clust_names, function(f) {
+		   f_names = names(bns_clust[[f]]);
+		   lapply(f_names, function(gr) {
+				  gr_names = names(bns_clust[[f]][[gr]]);
+				  lapply(gr_names, function(bn) {
+#						 par(ask = T);
+						 main = sprintf("%s, %s, %s", f, gr, bn); 
+						 print(main);
+						 plot(bns_clust[[f]][[gr]][[bn]], main = main);
 									 })
 							 })
 						});
-
-	return(bns_clust)
+	dev.off();
+	return(bns_clust);
 }
