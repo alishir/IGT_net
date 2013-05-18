@@ -75,8 +75,8 @@ js_subject_clusters <- function(alpha = 0.3)
 					lm_data2 = matrix(t(lm_data), nrow = 1);
 					ln = lm(as.vector(lm_data2) ~ rep(seq(41,101), nrow(lm_data)));
 					slope = ln[[1]][[2]];
-					print(sprintf("metric: %s, gr: %s, sg: %s, slope: %f, alpha: %f", 
-								  metric, gr, sg, slope, alpha));
+#					print(sprintf("metric: %s, gr: %s, sg: %s, slope: %f, alpha: %f", 
+#								  metric, gr, sg, slope, alpha));
 					if (slope > alpha)
 					{
 						key = 'learn';
@@ -86,7 +86,7 @@ js_subject_clusters <- function(alpha = 0.3)
 						key = 'unlearn';
 					}
 					learn_or_not[[metric]][[gr]][[key]] = rbind(learn_or_not[[metric]][[gr]][[key]], best_worst[[gr]][[sg]][sub_in, ]);	
-					print(sprintf("New %s: %s", key, rownames(learn_or_not[[metric]][[gr]][[key]])));
+#					print(sprintf("New %s: %s", key, rownames(learn_or_not[[metric]][[gr]][[key]])));
 				}
 			}
 		}

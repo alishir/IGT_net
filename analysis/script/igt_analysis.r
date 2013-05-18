@@ -6,9 +6,22 @@ library('dtw');
 library('WRS');		# Wilcox Robust Methods
 library('coin');	# Kruskal-Walls test
 library('Hmisc');
+
 source('./add_new_sub.r');
 source('./Friedman-Test-with-Post-Hoc.r');
+
 BASE_PATH <<- paste(getwd(), "tmp", sep = '/');
+
+PAYOFF_SCHEMA = matrix(c(-250, 0.5, 2.013,
+						 -250, 0.9, 15.625,
+						 250, 0.5, 0.277,
+						 250, 0.9, 0.625), nrow = 4, byrow = T);
+# normalize payoff_schema
+PAYOFF_SCHEMA = apply(PAYOFF_SCHEMA, 2, function(x) { (x - mean(x)) / sd(x)});
+rownames(PAYOFF_SCHEMA) = c("A", "B", "C", "D");
+colnames(PAYOFF_SCHEMA) = c("outcome", "gain", "loss");
+
+
 load_exec_data <- function(igt_result_dir)
 {
 	if (file.exists(paste(igt_result_dir, "all.dat", sep = "/")))
