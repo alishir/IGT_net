@@ -15,10 +15,10 @@ prepare_data_for_bnlearn <- function(dat) {
 # 							 0.86, -0.86, 0.79,
 # 							 0.86, 0.86, 0.34 ), nrow = 4, byrow = T);
 
-	payoff_schema = matrix(c(-250, 0.5, 2.013,
-							 -250, 0.9, 15.625,
-							 250, 0.5, 0.277,
-							 250, 0.9, 0.625), nrow = 4, byrow = T);
+	payoff_schema = matrix(c(-250, 0.5, 1/2.013,
+							 -250, 0.9, 1/15.625,
+							 250, 0.5, 1/0.277,
+							 250, 0.9, 1/0.625), nrow = 4, byrow = T);
 	rownames(payoff_schema) = c("A", "B", "C", "D");
 	colnames(payoff_schema) = c("outcome", "gain", "loss");
 	# normalize payoff_schema
@@ -48,7 +48,7 @@ prepare_data_for_bnlearn <- function(dat) {
 					seq(floor(min_x), ceiling(max_x)); });
 
 	disc = lapply(disc_seq, function(x) { cut(x, 5, disc_labels); });
-	print(disc_seq);
+#	print(disc_seq);
 
 	outcome_seq = disc_seq[["outcome"]];
 	gain_seq = disc_seq[["gain"]];
