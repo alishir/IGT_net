@@ -3,3 +3,6 @@
 *.swp
 *.o
 moc_*
+*.gpd
+*.png
+*.csv
