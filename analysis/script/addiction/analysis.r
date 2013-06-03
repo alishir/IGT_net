@@ -1,4 +1,5 @@
 library('dtw');
+library('foreign');
 
 
 file_path <<- '/home/ali/doc/ms/thesis/all_in_one/data/hamed/IGT_85-86-9-13_modified_all.csv';
@@ -19,6 +20,27 @@ calc_ts <- function(trial, feature = "outcome") {
 	t(trial_ts);
 }
 
+# TODO
+# make me functional :D
+# there is more that 40 card in some decks!!!!
+calc_acc_reward <- function(trial) {
+	rew_pun = read.octave('../pen.dat');
+	len = length(trial);
+	acc_rew = matrix(nrow = 1, ncol = len + 1);
+	ind = matrix(c(1,1,1,1), nrow = 4, ncol = 1);
+	acc_rew[1,1] = 2000;  # initial deposit!
+	deck_index_map = list('A' = 1, 'B' = 2, 'C' = 3, 'D' = 4);
+	for (i in seq(len)) {
+		ch = deck_index_map[[trial[i]]];  # deck A is 97, convert to matrix index
+		pin = ind[ch, 1];       # punishment index
+		# print(sprintf("i: %d, pin: %d, ch: %d", i, pin, ch));
+		acc_rew[1, i + 1] = acc_rew[1, i] + rew_pun$reward[ch, i] - rew_pun$punish[ch, pin];
+		ind[ch, 1] = ind[ch, 1] + 1;
+		ind[ch, 1] = min(ind[ch, 1], 40);		# more than 40 card in deck D, in dr ekhtiari data
+	}
+	return(acc_rew[, len + 1]);		# return the last
+}
+
 within_group_cluster <- function(subjects, num_of_clusters = 3, trial_range) {
 	dis = dist(subjects[, trial_range],  method = "DTW");
 	hc = hclust(dis, method = "ward");
@@ -27,7 +49,7 @@ within_group_cluster <- function(subjects, num_of_clusters = 3, trial_range) {
 }
 
 its_me <- function() {
-	reload_file = './addict.dat';
+	reload_file = './addict_without_random.dat';
 	reload = T;
 	if (reload) {
 		load(reload_file);
@@ -35,10 +57,11 @@ its_me <- function() {
 		# prepare data!
 		dat = read.csv(file_path);
 		sn = sapply(seq(100), function(x) { sprintf("S%d", x) });	# column names of subject selections
-		dat[,sn] = t(apply(dat[, sn], 1, function(x) {gsub("[0-9]+", "", x)}));		# remove digits from selections
-
 		# debug
-		# dat = dat[120:140,];
+		# dat = dat[127:133,];
+		dat[,sn] = t(apply(dat[, sn], 1, function(x) {gsub("[0-9]+", "", x)}));		# remove digits from selections
+		dat[["AccReward"]] = apply(dat[, sn], 1, function(x) { calc_acc_reward(x); });
+
 
 		# get number of groups in current data
 		groups = names(summary(dat[, "Group"]));
@@ -51,6 +74,7 @@ its_me <- function() {
 		num_of_clusters = 3;
 		clust_in_grp = lapply(groups, function(gr) {
 							  sub_in_grp = dat[dat[["Group"]] == gr, ];
+
 							  # add random subjects
 							  random = data.frame(sub_in_grp);		# clone 
 							  random[, "Group"] = "random";			# change group type
@@ -59,7 +83,9 @@ its_me <- function() {
 							  random[, sn] = t(apply(random[, sn], 1, function(x) {
 													 sapply(runif(100, min = 96, max = 100), function(x) { toupper(intToUtf8(ceiling(x))) }) }));
 							  # bind to main subjects
-							  sub_in_grp_rnd = rbind(sub_in_grp, random);
+#							  sub_in_grp_rnd = rbind(sub_in_grp, random);		# add random subjects
+							  sub_in_grp_rnd = sub_in_grp;						# without random subjects
+
 							  row.names(sub_in_grp_rnd) = sub_in_grp_rnd[, "ID"];		# set rownames to IDs
 							  # calculate time series for each feature
 							  sub_in_grp_feature_ts = lapply(features, function(f) {
@@ -78,26 +104,34 @@ its_me <- function() {
 	plot_ratio = 3;
 	lapply(features, function(f) {
 		   png(sprintf("/tmp/%s.png", f), width = 600 * plot_ratio, height = 800 * plot_ratio);
+		   sink(sprintf("/tmp/%s_stat.txt", f));
+
 		   layout(matrix(seq(length(groups) * num_of_clusters), nrow = num_of_clusters));
 		   lapply(groups, function(gr) {
 				  curr_dat = clust_in_grp[[gr]][[f]];
+				  num_of_sub_in_grp = sum(dat[["Group"]] == gr);
 				  par(cex = 2);
 				  sapply(seq(num_of_clusters), function(clus) { 	
 						 curr_clust = curr_dat[curr_dat[["cluster"]] == clus, ];		# subjects that are in cluster clust
 						 curr_clust = curr_clust[curr_clust[["Group"]] != "random", ];		# remove random subjects
-						 print(curr_clust);
+						 print(sprintf("Group: %s, Cluster: %d, AccReward Mean: %f, AccReward SD: %f", 
+									   gr, clus, mean(curr_clust[["AccReward"]]), sd(curr_clust[["AccReward"]])));
 						 num_of_sub = dim(curr_clust)[1];
 						 color = rainbow(num_of_sub, alpha = 1);
 						 matplot(t(curr_clust[, sn]), type = 'l',
 								 lwd = 4, ylab = sprintf("Acc. payoff based on %s", toupper(f)), 
-								 col = color, xlab = "Trial",
+								 col = color, xlab = "Trial", ylim = c(-20, 90),
 								 main = sprintf("Group: %s, Cluster: %d", gr, clus)); 
 #						 legend('topleft', curr_clust[, "ID"], 
 #								col = color, fill = color);
-						 legend('bottomleft', legend = sprintf("# of subjects: %d", num_of_sub));
+						 legend('topleft', box.lwd = 0, legend = sprintf("%% of subjects: %.2f\nAccReward Mean: %.2f\nAccReward SD: %.2f", 
+															   num_of_sub / num_of_sub_in_grp, 
+															   mean(curr_clust[["AccReward"]]), 
+															   sd(curr_clust[["AccReward"]])));
 						});
 				});
 		   dev.off();
+		   sink();
 	});
 	list(clust_in_grp, dat);
 }
