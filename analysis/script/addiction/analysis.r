@@ -1,5 +1,6 @@
 library('dtw');
 library('foreign');
+library('mclust');
 
 
 file_path <<- '/home/ali/doc/ms/thesis/all_in_one/data/hamed/IGT_85-86-9-13_modified_all.csv';
@@ -83,7 +84,7 @@ its_me <- function() {
 							  random[, sn] = t(apply(random[, sn], 1, function(x) {
 													 sapply(runif(100, min = 96, max = 100), function(x) { toupper(intToUtf8(ceiling(x))) }) }));
 							  # bind to main subjects
-#							  sub_in_grp_rnd = rbind(sub_in_grp, random);		# add random subjects
+							  #							  sub_in_grp_rnd = rbind(sub_in_grp, random);		# add random subjects
 							  sub_in_grp_rnd = sub_in_grp;						# without random subjects
 
 							  row.names(sub_in_grp_rnd) = sub_in_grp_rnd[, "ID"];		# set rownames to IDs
@@ -97,11 +98,24 @@ its_me <- function() {
 															 sub_in_grp_rnd[["cluster"]] = within_group_cluster(sub_in_grp_rnd, num_of_clusters, trial_range);
 															 sub_in_grp_rnd;
 							 });
-						});
+});
 		save(file = reload_file, list = ls());
 	}
-	# plot clusters
+
 	plot_ratio = 3;
+	# plot number of optimal clusters for each group
+	lapply(groups, function(gr) {
+		   sub_in_grp = dat[dat[["Group"]] == gr, ];
+		   row.names(sub_in_grp) = sub_in_grp[, "ID"];		# set rownames to IDs
+		   sub_in_grp[, sn] = t(apply(sub_in_grp[, sn], 1, 'calc_ts', feature = "outcome"));
+		   png(sprintf("/tmp/%s_outcome.optimal.clust.png", gr), width = 600 * plot_ratio, height = 800 * plot_ratio);
+		   # TODO, there is some problem in Mclust plot
+		   emfit = Mclust(sub_in_grp[, sn]);
+		   print(summary(emfit));
+		   dev.off();
+		});
+
+	# plot clusters
 	lapply(features, function(f) {
 		   png(sprintf("/tmp/%s.png", f), width = 600 * plot_ratio, height = 800 * plot_ratio);
 		   sink(sprintf("/tmp/%s_stat.txt", f));
