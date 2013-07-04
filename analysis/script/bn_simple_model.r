@@ -15,18 +15,29 @@ prepare_data_for_bnlearn <- function(dat) {
 # 							 0.86, -0.86, 0.79,
 # 							 0.86, 0.86, 0.34 ), nrow = 4, byrow = T);
 
+<<<<<<< HEAD
 	payoff_schema = matrix(c(-250, 0.5, 1/2.013,
 							 -250, 0.9, 1/15.625,
 							 250, 0.5, 1/0.277,
 							 250, 0.9, 1/0.625), nrow = 4, byrow = T);
+=======
+	payoff_schema = matrix(c(-250, 0.5, 2.013,
+							 -250, 0.9, 15.625,
+							 250, 0.5, 0.277,
+							 250, 0.9, 0.625), nrow = 4, byrow = T);
+>>>>>>> testchanges
 	rownames(payoff_schema) = c("A", "B", "C", "D");
 	colnames(payoff_schema) = c("outcome", "gain", "loss");
 	# normalize payoff_schema
 	payoff_schema = apply(payoff_schema, 2, function(x) { (x - mean(x)) / sd(x)});
 	print(payoff_schema);
+<<<<<<< HEAD
+=======
+
+>>>>>>> testchanges
 
 	# convert user selections to feature weight in each trial
-#	dat = head(dat, 2)
+	dat = head(dat, 2)
 	pat = apply(dat, 1, function(x) { lapply(x, function(y) {
 											 index_to_deck = list("A", "B", "C", "D");
 											 ret = matrix(payoff_schema[index_to_deck[[y]], ], nrow = 1);
@@ -35,19 +46,23 @@ prepare_data_for_bnlearn <- function(dat) {
 							 })});
 
 	# rbind all rows on each subject
-	#	print(head(abind(pat[[1]], along = 1)))
+	print(head(abind(pat[[1]], along = 1)))
 	pat = lapply(pat, function(x) { apply(abind(x, along = 1), 2, function(y) { cumsum(y) }) });
-	#	print(head(pat[[1]]))
+	print(head(pat[[1]]))
 
 	######## discretize values ###########
 	disc_labels = c("very low", "low", "norm", "high", "very high");
+<<<<<<< HEAD
 	disc_labels = seq(5);
+=======
+>>>>>>> testchanges
 	disc_seq = apply(payoff_schema, 2, function(x) {
 					min_x = sum(x[x<0]) * 40;
 					max_x = sum(x[x>0]) * 40;
 					seq(floor(min_x), ceiling(max_x)); });
 
 	disc = lapply(disc_seq, function(x) { cut(x, 5, disc_labels); });
+<<<<<<< HEAD
 #	print(disc_seq);
 
 	outcome_seq = disc_seq[["outcome"]];
@@ -65,10 +80,34 @@ prepare_data_for_bnlearn <- function(dat) {
 									 gain_disc[tail(which(gain_seq < y["gain"]), 1)],
 									 loss_disc[tail(which(loss_seq < y["loss"]), 1)]);
 							 matrix(ret, nrow = 1);
+=======
+
+#	print(tail(pat[[1]]))
+# 	pat1 = lapply(pat, function(x) { 
+# 				 ret = apply(x, 1, function(y) {
+# 							 ret = c(outcome_disc[tail(which(outcome_seq < y["outcome"]), 1)],
+# 									 gain_disc[tail(which(gain_seq < y["gain"]), 1)],
+# 									 loss_disc[tail(which(loss_seq < y["loss"]), 1)]);
+# 							 matrix(ret, nrow = 1);
+# 							 })
+# #				 print(ret);
+# 				 rownames(ret) = colnames(x)
+# 				 t(ret) });		# why should I use t()?
+
+	pat = lapply(pat, function(x) {
+				  ret = apply(x, 1, function(y) {
+							  cols_x = colnames(x);
+							  ret = abind(lapply(cols_x, function(f) {
+									 disc[[f]][tail(which(disc_seq[[f]] < y[[f]]), 1)];
+									 }), along = 2);
+							  ret = data.frame(ret);
+							  colnames(ret) = cols_x;
+							  ret;
+>>>>>>> testchanges
 							 })
-				 rownames(ret) = colnames(x)
-				 t(ret) 		# why should I use t()?
-})
+				  abind(ret, along = 1); });
+
+	print(head(pat[[1]]));
 	############## add decision #############
 	# why lapply doesn't preserve names?
 	# because names(pat) have no names!
@@ -97,7 +136,12 @@ bn_analysis <- function() {
 		names(sub_names) = sub_names;
 		black_list = data.frame(from = rep(c("gain", "loss", "outcome"), each = 3), 
 								to = rep(c("gain", "loss", "outcome"), 3));
-		#	print(blacklist);
+#		black_list = data.frame(from = rep(c("decision"), each = 3), to = rep(c("loss", "gain", "outcome")));
+#		black_list2 = data.frame(from = c("loss"), to = c("decision"));
+#		black_list = rbind(black_list, black_list2);
+
+		print("Edge Black List:");
+		print(black_list);
 		bns = lapply(sub_names, function(x) {
 					 iamb(as.data.frame(pep_data[[x]]), blacklist = black_list) });
 
@@ -118,7 +162,14 @@ bn_analysis <- function() {
 	#	lapply(bns, function(x) {plot(x); par(ask = T) });
 	png("/tmp/bns_gr.png", width = 800, height = 600);
 	layout(matrix(seq(3), nrow = 1, byrow = T));
+<<<<<<< HEAD
 	lapply(groups, function(x) {plot(bns_gr[[x]], main = x); par(ask = T) });
+=======
+	lapply(groups, function(x) {
+		   plot(bns_gr[[x]], main = x);
+		   par(ask = T);
+						});
+>>>>>>> testchanges
 	dev.off();
 
 	############ cluster bn analysis  ############
@@ -145,6 +196,10 @@ bn_analysis <- function() {
 				  lapply(gr_names, function(bn) {
 #						 par(ask = T);
 						 main = sprintf("%s, %s, %s", f, gr, bn); 
+<<<<<<< HEAD
+=======
+#						 print(main);
+>>>>>>> testchanges
 						 plot(bns_clust[[f]][[gr]][[bn]], main = main);
 									 })
 							 })
