@@ -1,22 +1,6 @@
 % This code is the implementation of IGT from Bechara et al(2000) paper:
 % "Characterization of the decision-making deficit of patients with ventromedial prefrontal cortex lesions"
 function igt_orig(contact, sid, save_path)
-
-	%responsebox initialization
-%	resp_config = 'HardwareBufferSizes=1,1 ReceiveTimeout=0.001';
-	resp_config = 'InputBufferSize=1 ReceiveTimeout=0.001';
-% 	s = serial('COM4');% use device manager to findout com number of usbserial port after pluging the response box
-% 	s.inputbuffersize = 1;
-% 	fopen(s);
-% 	s.timeout = 0.001; %time out is the time that matlab wait for data
-	[response_handle, errmsg] = IOPort('OpenSerialPort', 'COM4', resp_config);
-
-	% config trigger, it seems cogent function
-%	config_serial(1,4800,0,0,8);
-%	config_serial( port, baudrate, parity, stopbits, bytesize);
-	triger_config = 'BaudRate=4800 StopBits=0 Parity=None DataBits=8';
-	[triger_handle, errmsg] = IOPort('OpenSerialPort', 'COM1', triger_config);
-
 	[wPtr, wRect, old_pref] = init_screen();
 
 	escape_key = KbName('ESCAPE');
@@ -34,16 +18,6 @@ function igt_orig(contact, sid, save_path)
 	[pid, time_base] = start_eye_tracker(sid, save_path);
 	itr = 1;
 	while itr < max_itr			% iteration of card selection by subject
-	   %**********WAIT FOR EPI TRIGER====
-% 	   clearserialbytes(1);
-% 	   waitserialbyte(1,inf,48);
-% 	   readserialbytes(1);
-
-	   IOPort('Purge', triger_handle);
-	   triger_data = 0;
-	   while (triger_data != 48)
-		   [triger_data, when, errmsg] = IOPort('Read', triger_handle, blocking = 1, 1);
-
 
 	   %============================
 		is_deck_selected = 0;
@@ -378,4 +352,28 @@ function show_msg(wPtr, reward, punish, deck)
 	Screen('Flip', wPtr);
 	tic
 	while toc < 1.25 end;
+end
+
+function wait_for_trigger(triger_handle)
+triger_data = 0
+while (triger_data ~= 48)
+		 if (IOPort('BytesAvailable', triger_handle))
+			 [triger_data, when, errmsg] = IOPort('Read', triger_handle, 1, 1);
+		 end
+		 n = IOPort('BytesAvailable', triger_handle);
+		 [date_dummy, when, errmsg] = IOPort('Read', triger_handle, 1, n);
+end
+fprintf('Trigger: %d\n', triger_data);
+end
+
+function [selected_deck] = read_respbox(respbox_handle)
+resp_data = -1;
+while(1)
+	if (IOPort('BytesAvailable', resp_handle))
+		[resp_data, when, errmsg] = IOPort('Read', resp_handle, 1, 1);
+		n = IOPort('BytesAvailable', resp_handle);
+		[date_dummy, when, errmsg] = IOPort('Read', resp_handle, 1, n);
+		fprintf('Resp: %d\n', resp_data);
+	end
+end
 end
