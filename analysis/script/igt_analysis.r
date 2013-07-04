@@ -8,7 +8,11 @@ library('coin');	# Kruskal-Walls test
 library('Hmisc');
 source('./add_new_sub.r');
 source('./Friedman-Test-with-Post-Hoc.r');
+<<<<<<< HEAD
 BASE_PATH <<- paste(getwd(), "tmp", sep = '/');
+=======
+BASE_PATH <<- '~/doc/code/IGT_net/analysis/script/tmp';
+>>>>>>> report-init
 load_exec_data <- function(igt_result_dir)
 {
 	if (file.exists(paste(igt_result_dir, "all.dat", sep = "/")))
