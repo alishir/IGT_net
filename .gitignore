@@ -3,6 +3,7 @@
 *.swp
 *.o
 moc_*
+<<<<<<< HEAD
 *.jpeg
 *.csv
 *.dat
@@ -18,3 +19,8 @@ moc_*
 *.out
 *.pdf
 igt_server/bin/
+=======
+*.gpd
+*.png
+*.csv
+>>>>>>> bnlearn
